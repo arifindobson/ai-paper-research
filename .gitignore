@@ -1,0 +1,12 @@
+# LaTeX build outputs
+*.aux
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.fls
+*.fdb_latexmk
+*.xdv
+
+# OS files
+.DS_Store
