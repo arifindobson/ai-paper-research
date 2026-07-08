@@ -34,6 +34,16 @@
 \usepackage{caption}
 \raggedbottom
 \sloppy
+% Generous float budgets: the case study is figure-dense, and the defaults
+% defer everything to the end of the document.
+\setcounter{topnumber}{3}
+\setcounter{dbltopnumber}{2}
+\setcounter{totalnumber}{5}
+\renewcommand{\topfraction}{0.92}
+\renewcommand{\dbltopfraction}{0.92}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.75}
+\renewcommand{\dblfloatpagefraction}{0.75}
 \hbadness=10000
 \vbadness=10000
 \hfuzz=42pt
@@ -123,33 +133,25 @@
     \begin{minipage}{0.86\textwidth}
       \small
       \textbf{Abstract.}
-      Every strategic map a retailer draws --- where to open stores, which
-      consumers the network actually reaches, where revenue leaks to
-      unserved demand --- is only as honest as the geography under it. In
-      Indonesia that geography is administrative: \emph{kota/kabupaten},
-      \emph{kecamatan}, and \emph{desa/kelurahan} polygons that vary in
-      area by three orders of magnitude, amputate organic catchments at
-      political borders, and are periodically redrawn (\emph{pemekaran}),
-      silently corrupting every year-over-year comparison. Paragon TRITIUM
-      replaces that foundation with an \emph{H3 Enterprise Spine}: a
-      warehouse-native master dimension of Uber H3 hexagonal cells onto
-      which stores, population, consumer demand, and transaction revenue
-      are all indexed at ingestion --- collapsing geospatial analysis into
-      standard SQL joins on one shared key. On the spine we formalize a
-      complete market-intelligence layer: composite demand mass,
-      distance-decay revenue capture, a four-class penetration rule that
-      isolates \emph{whitespace} (high population, zero captured revenue),
-      $k$-ring cannibalization screens, and area--reach gain curves. A
-      reproducible case study on a synthetic western Jakarta--Tangerang
-      corridor rediscovers a deliberately planted market gap, prices it at
-      ${\sim}$IDR~8.4\,bn of monthly revenue opportunity, and reaches 50\%
-      of population with 25\% of land area versus 38\% for whole districts.
-      Because H3 tessellates the entire planet with the same fixed,
-      politics-proof cells, the spine is more than an Indonesian fix: it is
-      a repeatable blueprint for global expansion --- the identical schema,
-      SQL, and playbook deploy unchanged in any new market the company
-      enters. We close with a three-phase roadmap from single-region proof
-      of concept to a globally scalable spatial-intelligence platform.
+      Where should the next store open? Which consumers does the network
+      already reach? Where is revenue leaking to unserved demand? Every one
+      of these decisions is keyed to a map --- and in Indonesia that map is
+      usually administrative geography: polygons that differ in area by
+      three orders of magnitude, cut catchments at political borders, and
+      are periodically redrawn (\emph{pemekaran}), breaking every
+      year-over-year comparison. Paragon TRITIUM replaces them with an
+      \emph{H3 Enterprise Spine}: every store, resident, consumer, and
+      rupiah of revenue indexed to the same fixed hexagonal grid at
+      ingestion, turning spatial analysis into ordinary SQL joins on the
+      data warehouse the company already runs. On a reproducible
+      Jakarta--Tangerang corridor, the spine isolates unserved
+      \emph{whitespace} worth ${\sim}$IDR~8.4\,bn per month and reaches
+      50\% of the population with 25\% of the land area, where district
+      targeting needs 38\% --- leaner media spend, sharper expansion
+      shortlists, measurable delivery SLAs. And because the grid covers
+      the planet, the same schema, SQL, and playbook deploy unchanged in
+      every new market: a working blueprint for global expansion, delivered
+      in three phases with no new infrastructure.
       \par\vspace{0.5em}
       \textbf{Keywords:} H3 spatial indexing, hexagonal grids, geospatial
       analytics, market penetration, whitespace analysis, retail gravity,
@@ -281,7 +283,7 @@ is the modern, warehouse-executable form of trading-area gap analysis.
 The MAUP critique of Section~\ref{sec:admin} follows
 Openshaw~\cite{openshaw1984}.
 
-\begin{figure}[t]
+\begin{figure}[!tp]
   \centering
   \input{figures/fig-hierarchy.tex}
   \caption{Aperture-7 hierarchical nesting of the H3 grid: each parent cell
@@ -339,7 +341,7 @@ resolution is the same today, a decade ago, and a decade hence. A spine
 keyed to H3 makes the organization's spatial history immune to political
 redistricting by construction.
 
-\begin{figure*}[t]
+\begin{figure*}[!tp]
   \centering
   \input{figures/fig-maup.tex}
   \caption{The modifiable areal unit problem on the study corridor. Both
@@ -357,7 +359,7 @@ The spine is deliberately boring technology: one dimension table and a
 discipline about when indexing happens. Figure~\ref{fig:pipeline} shows
 the pipeline; it stays entirely inside the existing warehouse.
 
-\begin{figure}[t]
+\begin{figure}[!tp]
   \centering
   \begin{tikzpicture}[node distance=0.55cm]
     \node[spineblock, text width=6.6cm] (src)
@@ -539,7 +541,7 @@ forced to buy geography in district-sized blocks --- it bounds the
 achievable precision of geofenced media, sampling campaigns, and coverage
 commitments under each geography.
 
-\begin{figure}[t]
+\begin{figure}[!tp]
   \centering
   \resizebox{\columnwidth}{!}{\input{figures/fig-kring.tex}}
   \caption{$k$-ring catchment overlap between two stores four cells apart:
@@ -607,7 +609,7 @@ currently monetizing below $r^{*}$). This is the strategic deliverable of
 the spine: not a map, but a ranked, priced shortlist of cells --- each
 ${\sim}0.74$\,km$^2$, small enough to visit, audit, and act on.
 
-\begin{figure*}[t]
+\begin{figure*}[!tp]
   \centering
   \resizebox{0.86\textwidth}{!}{\input{figures/fig-population.tex}}
   \caption{Synthetic population surface of the study corridor on H3
@@ -616,7 +618,7 @@ ${\sim}0.74$\,km$^2$, small enough to visit, audit, and act on.
   \label{fig:population}
 \end{figure*}
 
-\begin{figure*}[t]
+\begin{figure*}[!tp]
   \centering
   \resizebox{0.86\textwidth}{!}{\input{figures/fig-overlay.tex}}
   \caption{Joining the two datasets on the spine: population fill, captured
@@ -624,7 +626,7 @@ ${\sim}0.74$\,km$^2$, small enough to visit, audit, and act on.
   \label{fig:overlay}
 \end{figure*}
 
-\begin{figure*}[t]
+\begin{figure*}[!tp]
   \centering
   \resizebox{0.86\textwidth}{!}{\input{figures/fig-classification.tex}}
   \caption{Cell-level penetration classification derived from the joined
@@ -632,7 +634,7 @@ ${\sim}0.74$\,km$^2$, small enough to visit, audit, and act on.
   \label{fig:classification}
 \end{figure*}
 
-\begin{figure}[t]
+\begin{figure}[!tp]
   \centering
   \resizebox{\columnwidth}{!}{\input{figures/fig-scatter.tex}}
   \caption{Population versus captured revenue per cell, colored by
@@ -693,7 +695,7 @@ assigned to cell clusters during go-lives, and supply--demand imbalances
 responses in near real time. The unit of allocation is always the same
 auditable object --- an H3 cell --- from strategy deck to dispatch board.
 
-\begin{figure}[t]
+\begin{figure}[!tp]
   \centering
   \resizebox{\columnwidth}{!}{\input{figures/fig-gain.tex}}
   \caption{Population-reach gain curves: share of corridor population
@@ -702,7 +704,7 @@ auditable object --- an H3 cell --- from strategy deck to dispatch board.
   \label{fig:gain}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[!tp]
   \centering
   \resizebox{0.94\columnwidth}{!}{\input{figures/fig-bars.tex}}
   \caption{Geofenced area required to reach 50\% and 75\% of corridor
@@ -798,6 +800,7 @@ under every layer of the business is --- and the corridor study shows it
 can be stood up with open data and a weekend of SQL.
 
 % ============================================================================
+\clearpage
 \begin{thebibliography}{9}
 \small
 

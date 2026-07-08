@@ -150,6 +150,18 @@ Required color/style names (must be defined in preamble): `h3b100..h3b700`,
   (order-evaluated rules, short conditions) to fit the column. Clean
   compile, zero overfull boxes.
 
+- 2026-07-08 (rev 2): Abstract rewritten — shorter (~60% of previous),
+  opens on three business questions, closes on the global-expansion
+  blueprint. Float placement fixed: figures 7–10 were deferred onto the
+  bibliography page because default float budgets can't absorb 7 figures
+  against ~1.5 pages of §6–7 prose — raised top/total float counters and
+  fractions, changed all placements to [!tp], added \clearpage before the
+  bibliography. Verified via caption→page mapping: figures now land on
+  pp. 2–8, references alone on p. 10. Figure 6 (overlay) legend rebuilt in
+  generate_figures.py: two uncramped rows (revenue-bubble scale; whitespace
+  swatch + store mark + fill meaning) plus an on-map callout arrow labeling
+  the whitespace cluster. Clean compile, zero warnings/overfull.
+
 ## Milestone log
 - 2026-07-08: Phase 0 complete. Generator bug fixed, figures + stats in hand,
   plan written.

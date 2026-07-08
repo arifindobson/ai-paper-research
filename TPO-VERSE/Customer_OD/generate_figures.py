@@ -242,25 +242,39 @@ def fig_overlay(s=0.30):
             L.append("\\fill[accOr, draw=white, line width=0.55pt] "
                      "(%.3f,%.3f) circle (%.3f);" % (cx, cy, r))
     L.append(store_marks(s))
-    # bubble legend
-    W = SQ3 * s * (COLS + 0.5)
-    ry = -0.75
+    # annotation: call out the whitespace cluster on the map itself
+    white = [h for h in hexes if h["cls"] == "white"]
+    if white:
+        wx = sum(center(h["col"], h["row"], s)[0] for h in white) / len(white)
+        wy = sum(center(h["col"], h["row"], s)[1] for h in white) / len(white)
+        L.append("\\node[anchor=south, font=\\scriptsize\\itshape, text=clsWhi!85!black, "
+                 "align=center] (wlab) at (%.3f,%.3f) "
+                 "{whitespace: population\\\\ with no revenue capture};"
+                 % (wx - 1.05, wy + 1.15))
+        L.append("\\draw[-{Stealth[length=2.2mm]}, clsWhi!85!black, line width=0.7pt] "
+                 "(wlab.south) -- (%.3f,%.3f);" % (wx, wy + 0.28))
+    # legend row 1: revenue bubble scale
+    r1 = -0.80
     L.append("\\node[anchor=west, font=\\scriptsize, text=inkS] at (0.1,%.2f) "
-             "{Monthly revenue captured (IDR bn):};" % ry)
+             "{Monthly revenue captured (IDR bn):};" % r1)
     for i, v in enumerate([0.5, 1.5, 3.0]):
-        x = 4.6 + i * 1.35
+        x = 5.6 + i * 1.55
         r = rmax * math.sqrt(v / REVMAX)
         L.append("\\fill[accOr, draw=white, line width=0.55pt] (%.3f,%.2f) circle (%.3f);"
-                 % (x, ry, r))
+                 % (x, r1, r))
         L.append("\\node[anchor=west, font=\\scriptsize, text=inkS] at (%.3f,%.2f) {%.1f};"
-                 % (x + 0.24, ry, v))
+                 % (x + 0.26, r1, v))
+    # legend row 2: whitespace outline, store mark, fill meaning
+    r2 = -1.45
     L.append("\\draw[clsWhi, line width=0.9pt, dash pattern=on 2pt off 1.4pt] "
-             "(%.2f,%.2f) rectangle +(0.34,0.26);" % (9.4, ry - 0.13))
-    L.append("\\node[anchor=west, font=\\scriptsize, text=inkS] at (%.2f,%.2f) "
-             "{whitespace cell};" % (9.82, ry))
-    L.append("\\node[anchor=west, font=\\scriptsize, text=inkS] at (0.1,%.2f) "
-             "{Cell fill: population (as in Fig.~\\ref{fig:population})\\quad "
-             "\\tikz{\\node[store, scale=0.9] at (0,0) {};}\\; store};" % (ry - 0.5))
+             "(0.10,%.2f) rectangle +(0.34,0.26);" % (r2 - 0.13))
+    L.append("\\node[anchor=west, font=\\scriptsize, text=inkS] at (0.54,%.2f) "
+             "{whitespace cell};" % r2)
+    L.append("\\node[store, scale=0.9] at (3.30,%.2f) {};" % r2)
+    L.append("\\node[anchor=west, font=\\scriptsize, text=inkS] at (3.52,%.2f) "
+             "{existing store};" % r2)
+    L.append("\\node[anchor=west, font=\\scriptsize, text=inkS] at (6.10,%.2f) "
+             "{cell fill: population (as in Fig.~\\ref{fig:population})};" % r2)
     L.append("\\end{tikzpicture}")
     w("fig-overlay.tex", "\n".join(L) + "\n")
 

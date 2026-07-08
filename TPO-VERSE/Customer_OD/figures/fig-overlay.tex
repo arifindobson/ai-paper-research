@@ -404,14 +404,18 @@
 \node[store] at (7.534,1.350) {};
 \node[store] at (4.417,2.250) {};
 \node[store] at (4.677,3.600) {};
-\node[anchor=west, font=\scriptsize, text=inkS] at (0.1,-0.75) {Monthly revenue captured (IDR bn):};
-\fill[accOr, draw=white, line width=0.55pt] (4.600,-0.75) circle (0.029);
-\node[anchor=west, font=\scriptsize, text=inkS] at (4.840,-0.75) {0.5};
-\fill[accOr, draw=white, line width=0.55pt] (5.950,-0.75) circle (0.050);
-\node[anchor=west, font=\scriptsize, text=inkS] at (6.190,-0.75) {1.5};
-\fill[accOr, draw=white, line width=0.55pt] (7.300,-0.75) circle (0.071);
-\node[anchor=west, font=\scriptsize, text=inkS] at (7.540,-0.75) {3.0};
-\draw[clsWhi, line width=0.9pt, dash pattern=on 2pt off 1.4pt] (9.40,-0.88) rectangle +(0.34,0.26);
-\node[anchor=west, font=\scriptsize, text=inkS] at (9.82,-0.75) {whitespace cell};
-\node[anchor=west, font=\scriptsize, text=inkS] at (0.1,-1.25) {Cell fill: population (as in Fig.~\ref{fig:population})\quad \tikz{\node[store, scale=0.9] at (0,0) {};}\; store};
+\node[anchor=south, font=\scriptsize\itshape, text=clsWhi!85!black, align=center] (wlab) at (8.823,5.050) {whitespace: population\\ with no revenue capture};
+\draw[-{Stealth[length=2.2mm]}, clsWhi!85!black, line width=0.7pt] (wlab.south) -- (9.873,4.180);
+\node[anchor=west, font=\scriptsize, text=inkS] at (0.1,-0.80) {Monthly revenue captured (IDR bn):};
+\fill[accOr, draw=white, line width=0.55pt] (5.600,-0.80) circle (0.029);
+\node[anchor=west, font=\scriptsize, text=inkS] at (5.860,-0.80) {0.5};
+\fill[accOr, draw=white, line width=0.55pt] (7.150,-0.80) circle (0.050);
+\node[anchor=west, font=\scriptsize, text=inkS] at (7.410,-0.80) {1.5};
+\fill[accOr, draw=white, line width=0.55pt] (8.700,-0.80) circle (0.071);
+\node[anchor=west, font=\scriptsize, text=inkS] at (8.960,-0.80) {3.0};
+\draw[clsWhi, line width=0.9pt, dash pattern=on 2pt off 1.4pt] (0.10,-1.58) rectangle +(0.34,0.26);
+\node[anchor=west, font=\scriptsize, text=inkS] at (0.54,-1.45) {whitespace cell};
+\node[store, scale=0.9] at (3.30,-1.45) {};
+\node[anchor=west, font=\scriptsize, text=inkS] at (3.52,-1.45) {existing store};
+\node[anchor=west, font=\scriptsize, text=inkS] at (6.10,-1.45) {cell fill: population (as in Fig.~\ref{fig:population})};
 \end{tikzpicture}
