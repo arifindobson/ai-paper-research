@@ -162,6 +162,38 @@ Required color/style names (must be defined in preamble): `h3b100..h3b700`,
   swatch + store mark + fill meaning) plus an on-map callout arrow labeling
   the whitespace cluster. Clean compile, zero warnings/overfull.
 
+- 2026-07-08 (rev 3): Figure 7 (classification map) legend fixed — uniform
+  dx spacing made "Under-penetrated" collide with the "Whitespace" swatch;
+  legend_swatches now accepts explicit per-item x positions sized to label
+  widths, and an "existing store" mark row was added so the black squares
+  on the map are explained in-figure. Clean compile.
+
+- 2026-07-08 (rev 4): Installed poppler (pdftoppm) to actually render pages
+  and visually inspect layout, rather than reasoning about TikZ blind.
+  Figure 8 (scatter) had a real correctness bug, not just a text issue: axis
+  was hardcoded to xmax=19/ymax=3.4, but actual data reaches pop=23.4k /
+  rev=IDR 20.7bn — roughly a dozen of the highest-value "penetrated" cells
+  were silently clipped off the chart. Axis bounds are now computed from
+  the data (`5*ceil(popmax/5)`, `2*ceil(revmax/2)`) so nothing is dropped.
+  The whitespace annotation's arrow also pointed at empty space (fixed
+  coordinates from the old, wrong axis scale); rebuilt as a 3-segment path
+  that dips through the negative-revenue margin (guaranteed data-free,
+  since captured revenue is floored at 0) so it can never cross a marker
+  regardless of axis rescaling. Figure 9 (gain curves): legend at bottom
+  center collided with the "districts need 38% of area" annotation text
+  (both visible in the rendered page). Moved legend to the clear top-left
+  quadrant (curves only occupy the bottom-right diagonal band) and replaced
+  the two long overlapping sentences with short color-coded "25%"/"38%"
+  tags directly above each guide line, color-matched to their curve, plus
+  one compact "50% of population reached at:" caption — all verified clear
+  of the curves by checking interpolated curve height at each tag's x.
+  Verified visually via pdftoppm renders of pages 8-9. Clean compile.
+
+- 2026-07-08 (rev 5): Subtitle reordered to lead with the global-expansion
+  hook: "A Blueprint for Global Expansion — Every Store, Every Consumer,
+  Every Rupiah on One Hexagonal Grid" (title block + pdftitle metadata).
+  Clean compile.
+
 ## Milestone log
 - 2026-07-08: Phase 0 complete. Generator bug fixed, figures + stats in hand,
   plan written.
