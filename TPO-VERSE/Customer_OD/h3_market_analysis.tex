@@ -1,0 +1,877 @@
+% !TEX root = h3_market_analysis.tex
+% !TEX program = tectonic
+% !TEX options = --synctex "%DOC%.tex"
+% ============================================================================
+% PARAGON TRITIUM: THE H3 ENTERPRISE SPINE
+% One Hexagonal Grid for Stores, Population, Consumers, and Revenue ---
+% and a Blueprint for Global Expansion
+% ============================================================================
+\documentclass[11pt,a4paper,twocolumn]{article}
+
+% --- Packages ---------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2cm]{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{
+  positioning, arrows.meta, shapes.geometric, calc,
+  decorations.pathreplacing, fit, backgrounds
+}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{parskip}
+\usepackage{caption}
+\raggedbottom
+\sloppy
+\hbadness=10000
+\vbadness=10000
+\hfuzz=42pt
+
+% --- Color Palette ----------------------------------------------------------
+% Ink (text/annotation) tones
+\definecolor{inkP}{HTML}{0F172A}   % primary ink
+\definecolor{inkS}{HTML}{334155}   % secondary ink
+\definecolor{inkM}{HTML}{64748B}   % muted ink
+% Sequential blue ramp for population choropleths (light -> dark)
+\definecolor{h3b100}{HTML}{DBEAFE}
+\definecolor{h3b200}{HTML}{BFDBFE}
+\definecolor{h3b300}{HTML}{93C5FD}
+\definecolor{h3b400}{HTML}{60A5FA}
+\definecolor{h3b500}{HTML}{3B82F6}
+\definecolor{h3b600}{HTML}{2563EB}
+\definecolor{h3b700}{HTML}{1D4ED8}
+% Penetration classification
+\definecolor{clsPen}{HTML}{16A34A} % penetrated
+\definecolor{clsUnd}{HTML}{D97706} % under-penetrated
+\definecolor{clsWhi}{HTML}{DC2626} % whitespace
+\definecolor{clsLow}{HTML}{CBD5E1} % low priority
+% Accents and neutrals
+\definecolor{accOr}{HTML}{EA580C}  % revenue bubbles
+\definecolor{aqua}{HTML}{0EA5E9}   % second store ring
+\definecolor{neu}{HTML}{EEF2F6}    % neutral cell fill
+\definecolor{gridc}{HTML}{E2E8F0}  % plot grid lines
+\definecolor{spineBlue}{HTML}{2563EB}
+\definecolor{spineTeal}{HTML}{0D9488}
+\definecolor{spineLight}{HTML}{F1F5F9}
+\definecolor{spineGreen}{HTML}{16A34A}
+
+% --- Hyperref Setup ---------------------------------------------------------
+\hypersetup{
+  colorlinks=true,
+  linkcolor=spineBlue,
+  citecolor=spineTeal,
+  urlcolor=spineTeal,
+  pdftitle={Paragon TRITIUM: The H3 Enterprise Spine --- Every Store, Every
+    Consumer, Every Rupiah on One Hexagonal Grid},
+  pdfauthor={ParaTech Enterprise Research},
+}
+
+% --- Headers & Footers ------------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\itshape Paragon TRITIUM}
+\fancyhead[R]{\small\itshape The H3 Enterprise Spine}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Section Title Styling ---------------------------------------------------
+\titleformat{\section}
+  {\large\bfseries\color{inkS}}{\thesection}{0.7em}{}
+\titleformat{\subsection}
+  {\normalsize\bfseries\color{inkS}}{\thesubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{1.1em}{0.5em}
+\titlespacing*{\subsection}{0pt}{0.9em}{0.4em}
+
+% --- TikZ / pgfplots Styles ---------------------------------------------------
+\tikzset{
+  base/.style={inkM, line width=0.6pt},
+  store/.style={rectangle, fill=inkP, draw=white, line width=0.4pt,
+    inner sep=1.9pt},
+  spineblock/.style={rectangle, rounded corners=2pt, draw=inkS!70,
+    fill=spineLight, align=center, minimum height=0.85cm,
+    font=\small, inner sep=4pt},
+  spinearrow/.style={-{Stealth[length=2.6mm]}, thick, inkS},
+}
+
+% ============================================================================
+\begin{document}
+
+\twocolumn[{%
+  \begin{center}
+    {\LARGE\bfseries Paragon TRITIUM: The H3 Enterprise Spine\par}
+    \vspace{0.35em}
+    {\large Every Store, Every Consumer, Every Rupiah on One Hexagonal
+      Grid --- and a Blueprint for Global Expansion\par}
+    \vspace{1.1em}
+    {\normalsize Arifin Dobson\par}
+    {\small ParaTech Enterprise Research\par}
+    {\small \texttt{muhammad.adobson@paracorpgroup.com}\par}
+    \vspace{0.4em}
+    {\small July 2026\par}
+    \vspace{1.2em}
+    \begin{minipage}{0.86\textwidth}
+      \small
+      \textbf{Abstract.}
+      Every strategic map a retailer draws --- where to open stores, which
+      consumers the network actually reaches, where revenue leaks to
+      unserved demand --- is only as honest as the geography under it. In
+      Indonesia that geography is administrative: \emph{kota/kabupaten},
+      \emph{kecamatan}, and \emph{desa/kelurahan} polygons that vary in
+      area by three orders of magnitude, amputate organic catchments at
+      political borders, and are periodically redrawn (\emph{pemekaran}),
+      silently corrupting every year-over-year comparison. Paragon TRITIUM
+      replaces that foundation with an \emph{H3 Enterprise Spine}: a
+      warehouse-native master dimension of Uber H3 hexagonal cells onto
+      which stores, population, consumer demand, and transaction revenue
+      are all indexed at ingestion --- collapsing geospatial analysis into
+      standard SQL joins on one shared key. On the spine we formalize a
+      complete market-intelligence layer: composite demand mass,
+      distance-decay revenue capture, a four-class penetration rule that
+      isolates \emph{whitespace} (high population, zero captured revenue),
+      $k$-ring cannibalization screens, and area--reach gain curves. A
+      reproducible case study on a synthetic western Jakarta--Tangerang
+      corridor rediscovers a deliberately planted market gap, prices it at
+      ${\sim}$IDR~8.4\,bn of monthly revenue opportunity, and reaches 50\%
+      of population with 25\% of land area versus 38\% for whole districts.
+      Because H3 tessellates the entire planet with the same fixed,
+      politics-proof cells, the spine is more than an Indonesian fix: it is
+      a repeatable blueprint for global expansion --- the identical schema,
+      SQL, and playbook deploy unchanged in any new market the company
+      enters. We close with a three-phase roadmap from single-region proof
+      of concept to a globally scalable spatial-intelligence platform.
+      \par\vspace{0.5em}
+      \textbf{Keywords:} H3 spatial indexing, hexagonal grids, geospatial
+      analytics, market penetration, whitespace analysis, retail gravity,
+      MAUP, Indonesia.
+    \end{minipage}
+    \vspace{1.4em}
+  \end{center}
+}]
+
+% ============================================================================
+\section{Introduction}
+\label{sec:intro}
+
+Every strategic question a retail and distribution business asks about
+territory reduces to joining four layers of data at a common spatial unit:
+where the \emph{stores} are, where the \emph{population} lives, how
+\emph{consumers} in each place actually behave, and where \emph{revenue} is
+--- and is not --- being captured. The choice of that spatial unit is
+usually treated as an afterthought, inherited from whatever polygons the
+data arrived in. In Indonesia those polygons are almost always
+administrative: 38 provinces, 500-plus \emph{kota/kabupaten}, some 7{,}000
+\emph{kecamatan}, and over 80{,}000 \emph{desa/kelurahan}.
+
+This inheritance is not neutral. Administrative units vary in size by three
+orders of magnitude, so any per-unit statistic --- revenue per capita,
+outlets per district, penetration rate --- is confounded by the unit's
+arbitrary extent, the classical \emph{modifiable areal unit problem}
+(MAUP)~\cite{openshaw1984}. Their borders cut across organically connected
+commercial catchments: a store on the western edge of Jakarta draws much of
+its demand from Tangerang, in a different province. And the units
+themselves are unstable --- \emph{pemekaran}, the recurrent splitting of
+provinces, regencies, and villages, silently breaks every historical
+year-over-year comparison keyed to them.
+
+This paper argues for, and specifies, a different foundation: a shared
+\emph{H3 Spine}. H3~\cite{brodsky2018} is an open-source hierarchical
+hexagonal discrete global grid that assigns every coordinate on Earth a
+short alphanumeric index at each of 16 resolutions. Indexing every fact
+table --- store registry, population raster, consumer records, transaction
+revenue --- to the same H3 resolution at ingestion converts geospatial
+analysis from expensive polygon geometry into standard SQL string joins,
+executable natively in modern cloud warehouses and renderable directly in
+mainstream GIS and BI tooling~\cite{crawford2023, snowflakeh3}.
+
+Our contributions are fourfold:
+
+\begin{enumerate}[leftmargin=1.4em, itemsep=0.15em]
+  \item \textbf{A failure analysis of administrative geography} for market
+    analytics in the Indonesian context --- MAUP distortion, cross-border
+    catchment blindness, and \emph{pemekaran} instability
+    (Section~\ref{sec:admin}).
+  \item \textbf{The H3 Spine architecture}: a governed, warehouse-native
+    pipeline that standardizes all four data layers onto one hexagonal
+    dimension table (Section~\ref{sec:architecture}).
+  \item \textbf{A formal metrics layer} on the spine: composite demand
+    mass, distance-decay revenue capture, a four-class penetration
+    taxonomy isolating whitespace, $k$-ring cannibalization, and
+    area--reach gain curves (Section~\ref{sec:method}).
+  \item \textbf{An end-to-end case study} on a deterministic synthetic
+    corridor modeled on western Jakarta--Tangerang, quantifying targeting
+    gains and whitespace opportunity (Sections~\ref{sec:casestudy}
+    and~\ref{sec:applications}).
+\end{enumerate}
+
+The framework is deliberately engine-agnostic downstream: the same spine
+that answers the strategic questions here feeds the context-aware routing
+layer of our companion work on fleet optimization~\cite{terra2026}.
+
+% ============================================================================
+\section{Background: The H3 Discrete Global Grid}
+\label{sec:background}
+
+\subsection{Mechanics}
+
+H3 tessellates the globe into hexagonal cells at 16 nested resolutions,
+from resolution~0 (${\sim}4.25 \times 10^6$\,km$^2$ per cell) down to
+resolution~15 (${\sim}0.9$\,m$^2$)~\cite{h3docs}. Three properties make it
+the natural unit for market analytics.
+
+\textbf{Uniform, near-isotropic adjacency.} Unlike squares --- whose
+diagonal neighbors are $\sqrt{2}$ farther than their edge neighbors --- a
+hexagon's six neighbors all lie at the same center-to-center distance,
+minimizing directional bias in catchment and proximity
+computations~\cite{esriwhyhex}. At a fixed resolution cells are
+near-uniform in area (resolution~8, the workhorse of this paper, averages
+$0.737$\,km$^2$), so per-cell counts are directly comparable --- the
+property administrative polygons conspicuously lack.
+
+\textbf{Hierarchical indexing.} Each parent cell subdivides into
+approximately seven children one resolution finer (aperture~7,
+Figure~\ref{fig:hierarchy}). Because the hierarchy is encoded in the index
+itself, coarsening an analysis from neighborhood to regional scale is an
+index-truncation operation --- no re-projection, no polygon dissolve.
+Resolution can therefore be treated as a \emph{query parameter} rather
+than a data-modeling commitment: the same resolution-8 spine rolls up to
+resolution 6 for provincial dashboards or drills to resolution 10
+(${\sim}15{,}000$\,m$^2$) for site selection.
+
+\textbf{Index-as-key computation.} An H3 index is a short string. Point
+data (a POS transaction, a customer address, a competitor location) is
+assigned its cell once at ingestion; thereafter every spatial operation ---
+joining revenue to population, counting stores near a customer, defining a
+delivery zone --- is a string equality join or a bounded neighborhood
+lookup (\texttt{k-ring}), both native to columnar warehouses. The
+computational profile of spatial analytics collapses to that of ordinary
+SQL.
+
+\subsection{Tooling Ubiquity}
+
+The pragmatic case for H3 is that the entire enterprise toolchain now
+speaks it natively. Cloud warehouses ship H3 functions in
+SQL~\cite{snowflakeh3, bigqueryjslibs}; desktop GIS added first-class
+support when ArcGIS Pro 3.1's \emph{Generate Tessellation} tool gained H3
+grid types, with Business Analyst workflows built on the same
+cells~\cite{crawford2023}; and browser renderers (Kepler.gl, deck.gl,
+Felt) draw H3 layers from a plain column of indexes. An organization can
+adopt the spine without licensing a single new component.
+
+\subsection{Retail-Geography Lineage}
+
+The analytical layer we build on the spine has deep roots. Reilly's law of
+retail gravitation~\cite{reilly1931} and Zipf's interaction
+hypothesis~\cite{zipf1946} established that commercial attraction decays
+with distance and scales with mass; Huff's probabilistic trading
+areas~\cite{huff1964} gave the canonical store-choice formulation. Our
+revenue-capture model (Section~\ref{sec:method}) is a Huff-style decay
+kernel evaluated on hexagon centroids, and our whitespace classification
+is the modern, warehouse-executable form of trading-area gap analysis.
+The MAUP critique of Section~\ref{sec:admin} follows
+Openshaw~\cite{openshaw1984}.
+
+\begin{figure}[t]
+  \centering
+  \input{figures/fig-hierarchy.tex}
+  \caption{Aperture-7 hierarchical nesting of the H3 grid: each parent cell
+    at resolution $n$ subdivides into approximately seven children at
+    resolution $n{+}1$; truncating an index string coarsens the view.}
+  \label{fig:hierarchy}
+\end{figure}
+
+% ============================================================================
+\section{The Case Against Administrative Geography}
+\label{sec:admin}
+
+Administrative polygons exist to govern, not to measure markets. Used as
+analytical units they introduce three distinct, compounding distortions.
+
+\subsection{The Modifiable Areal Unit Problem}
+
+A \emph{desa} in dense urban Jakarta can cover under 1\,km$^2$ and hold
+30{,}000 residents; a \emph{desa} in Kalimantan can span hundreds of square
+kilometers with fewer than 1{,}000. Any choropleth of revenue, population,
+or penetration built on such units is dominated visually and statistically
+by polygon \emph{size} rather than by the phenomenon being mapped: vast
+sparse districts swamp the map while the urban cores where the business is
+actually won or lost vanish into slivers. Figure~\ref{fig:maup} shows the
+effect on our study corridor with the underlying data held constant ---
+district-level aggregation (panel~a) manufactures large homogeneous
+plateaus and erases the demand gradients that the uniform resolution-8
+grid (panel~b) preserves. The distortion is not a visualization nuisance;
+it propagates into every downstream ratio. Standardizing the archipelago
+onto ${\sim}0.737$\,km$^2$ hexagons makes ``revenue per cell'' an
+apples-to-apples quantity from Jakarta to Kalimantan.
+
+\subsection{Cross-Border Catchment Blindness}
+
+Consumers do not respect political borders. A store on the western edge of
+DKI Jakarta draws naturally from Tangerang in Banten province; a
+distribution hub near a provincial boundary serves both sides. Grouping
+metrics by \emph{kota} erects artificial walls through these organic
+catchments: the store's performance is judged against the population of
+the wrong polygon, and the demand it actually serves is credited to a
+neighbor. On the spine, a catchment is simply the set of cells within $k$
+rings of a location --- a neighborhood query that crosses provincial
+borders as indifferently as consumers do
+(Section~\ref{sec:method}, Figure~\ref{fig:kring}).
+
+\subsection{\emph{Pemekaran} Instability}
+
+Indonesian administrative geography is a moving target: provinces,
+regencies, and villages split (\emph{pemekaran}) with regularity. Each
+split breaks the join key of every historical dataset aggregated to the
+old boundaries --- year-over-year comparisons must either be abandoned or
+rebuilt through error-prone crosswalk tables. H3 cells, by contrast, are
+mathematically fixed: the cell containing a given coordinate at a given
+resolution is the same today, a decade ago, and a decade hence. A spine
+keyed to H3 makes the organization's spatial history immune to political
+redistricting by construction.
+
+\begin{figure*}[t]
+  \centering
+  \input{figures/fig-maup.tex}
+  \caption{The modifiable areal unit problem on the study corridor. Both
+    panels color the identical synthetic population surface; (a) aggregates
+    it to irregular administrative districts, (b) renders it on the uniform
+    H3 resolution-8 grid.}
+  \label{fig:maup}
+\end{figure*}
+
+% ============================================================================
+\section{The H3 Spine Architecture}
+\label{sec:architecture}
+
+The spine is deliberately boring technology: one dimension table and a
+discipline about when indexing happens. Figure~\ref{fig:pipeline} shows
+the pipeline; it stays entirely inside the existing warehouse.
+
+\begin{figure}[t]
+  \centering
+  \begin{tikzpicture}[node distance=0.55cm]
+    \node[spineblock, text width=6.6cm] (src)
+      {\textbf{Sources}\\
+       \footnotesize POS transactions, ERP store registry, field devices
+       (lat/long) $\mid$ external: population rasters, competitor
+       locations, demographics};
+    \node[spineblock, text width=6.6cm, below=of src] (ingest)
+      {\textbf{Ingestion \& indexing}\\
+       \footnotesize coordinates $\rightarrow$ H3 index (res.\ 8) at load
+       time; index stored as a plain string column};
+    \node[spineblock, text width=6.6cm, fill=spineBlue!10, below=of ingest]
+      (spine)
+      {\textbf{The H3 Spine}\\
+       \footnotesize master dimension of all cells covering the operating
+       territory; one row per cell per resolution};
+    \node[spineblock, text width=6.6cm, below=of spine] (marts)
+      {\textbf{Metric marts (SQL joins on the index)}\\
+       \footnotesize demand mass $W_h$, captured revenue $R_h$,
+       penetration class, $k$-ring catchments --- materialized views};
+    \node[spineblock, text width=6.6cm, fill=spineGreen!12, below=of marts]
+      (viz)
+      {\textbf{Serving layer}\\
+       \footnotesize BI (Tableau, Power BI), GIS (ArcGIS Pro, Kepler.gl):
+       render pre-aggregated cell metrics only};
+    \draw[spinearrow] (src) -- (ingest);
+    \draw[spinearrow] (ingest) -- (spine);
+    \draw[spinearrow] (spine) -- (marts);
+    \draw[spinearrow] (marts) -- (viz);
+  \end{tikzpicture}
+  \caption{The H3 Spine pipeline. Indexing happens once at ingestion;
+    every downstream operation is a join on the H3 string, and
+    visualization tools render pre-aggregated metrics rather than raw
+    geometry.}
+  \label{fig:pipeline}
+\end{figure}
+
+\textbf{Index at ingestion, never at query time.} Coordinates from POS
+systems, ERP store masters, and field devices are converted to a
+resolution-8 H3 string the moment they land. Geocoding debt is paid once;
+every analyst thereafter inherits a clean join key. External layers ---
+open population data already distributed on H3 cells~\cite{kontur},
+competitor registries, demographics --- are transformed to the same
+resolution on arrival.
+
+\textbf{One spine, many resolutions.} The master dimension holds every
+cell covering the operating territory. Because aperture-7 parentage is a
+function of the index, coarser rollups are derived columns, not separate
+pipelines. The spine also carries slowly changing cell attributes
+(urban/rural class, region ownership, serviceability flags) so that
+business rules join at the same key as facts.
+
+\textbf{Metrics as materialized views.} The analytical layer of
+Section~\ref{sec:method} compiles to ordinary SQL over the spine ---
+group-bys, window percentiles, and bounded \texttt{k-ring} expansions ---
+maintained as scheduled materialized views. BI and GIS tools connect to
+these views and render \emph{pre-aggregated} cell metrics, which keeps
+dashboards fast, load predictable, and governance centralized: there is
+exactly one definition of ``whitespace'' in the company, and it lives in
+the warehouse, not in a workbook.
+
+% ============================================================================
+\section{Analytical Method}
+\label{sec:method}
+
+We now define the metrics layer. All quantities are per-cell; $h$ ranges
+over spine cells and $s$ over stores. Table~\ref{tab:notation} collects
+the notation.
+
+\begin{table}[t]
+  \centering
+  \small
+  \caption{Notation.}
+  \label{tab:notation}
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    \textbf{Symbol} & \textbf{Meaning} \\
+    \midrule
+    $H$, $S$ & set of spine cells / stores \\
+    $P_h$ & population of cell $h$ \\
+    $a_s$ & attractiveness (gross pull) of store $s$ \\
+    $d(h,s)$ & hex-grid distance, cell $h$ to store cell \\
+    $\tau$ & catchment decay length (cells) \\
+    $\kappa$ & spend conversion rate (IDR/person) \\
+    $R_h$ & monthly revenue captured from cell $h$ \\
+    $r_h$ & revenue per capita, $R_h / P_h$ \\
+    $P^{*}, r^{*}$ & population / rev-per-capita thresholds \\
+    $\mathcal{K}_k(s)$ & $k$-ring catchment of store $s$ \\
+    $G(x)$ & population reached at area share $x$ \\
+    $W_h$ & composite demand mass of cell $h$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Demand Surface}
+
+The base layer is a population (or, more generally, demand) surface on the
+spine. Where richer signals exist, a composite mass generalizes raw
+population:
+\begin{equation}
+  \label{eq:mass}
+  W_h \;=\; \lambda_P P_h + \lambda_O O_h + \lambda_S S_h,
+\end{equation}
+with $O_h$ historical order volume, $S_h$ serviceable-outlet density, and
+$\lambda$'s business-set calibration weights --- the same composite that
+feeds the routing layer in~\cite{terra2026}. The case study uses the pure
+population surface ($\lambda_O = \lambda_S = 0$), which is the honest
+starting point for an organization bootstrapping the spine from open
+data~\cite{kontur}.
+
+\subsection{Revenue Capture with Distance Decay}
+
+Each store projects a Huff-style~\cite{huff1964} Gaussian decay kernel
+onto the surrounding cells; the revenue captured from cell $h$ is
+\begin{equation}
+  \label{eq:capture}
+  R_h \;=\; \kappa \, P_h \sum_{s \in S} a_s\,
+    \exp\!\left( -\frac{d(h,s)^2}{2\tau^2} \right),
+\end{equation}
+truncated to zero below a floor $\varepsilon$ (a cell whose entire
+predicted capture is negligible is treated as unserved). The decay length
+$\tau$ is the single most consequential calibration: it encodes how far
+consumers travel to a store, and should be fit per store format from
+loyalty or delivery-address data. Note that $d(h,s)$ is the \emph{hex-grid}
+distance --- a constant-time index computation on the spine, not a road
+query; where road realism matters the kernel can be re-evaluated on
+travel-time isochrones without changing anything downstream.
+
+\subsection{Penetration Classification}
+
+Cells are classified by crossing the demand surface with captured revenue.
+With $P^{*}$ a population percentile threshold (the case study uses the
+60th) and $r^{*}$ a per-capita revenue threshold (40th percentile of
+served cells), rules evaluated top to bottom:
+\begin{equation}
+  \label{eq:class}
+  \mathrm{class}(h) =
+  \begin{cases}
+    \text{low priority}, & P_h < P^{*},\\[0.2em]
+    \text{whitespace}, & R_h = 0,\\[0.2em]
+    \text{under-penetrated}, & r_h < r^{*},\\[0.2em]
+    \text{penetrated}, & \text{otherwise.}
+  \end{cases}
+\end{equation}
+The taxonomy is deliberately coarse --- four classes an executive can act
+on. \emph{Whitespace} (people, no revenue) is the expansion shortlist;
+\emph{under-penetrated} (people, weak revenue) is the marketing and
+assortment shortlist; the thresholds are percentile-based so the
+classification survives recalibration of $\kappa$ and $a_s$ unchanged.
+The monetary size of the whitespace follows directly: at the served-cell
+average revenue per capita $\bar{r}$, the opportunity is
+$\bar{r} \sum_{h \in \mathrm{white}} P_h$.
+
+\subsection{$k$-Ring Catchments and Cannibalization}
+
+The $k$-ring $\mathcal{K}_k(s) = \{\,h : d(h,s) \le k\,\}$ is the spine's
+native catchment primitive. For two stores, the shared cells
+$\mathcal{K}_k(s) \cap \mathcal{K}_k(s')$ measure catchment overlap; the
+population-weighted overlap share
+\begin{equation}
+  \label{eq:cannibal}
+  \chi(s,s') \;=\;
+  \frac{\sum_{h \in \mathcal{K}_k(s) \cap \mathcal{K}_k(s')} P_h}
+       {\sum_{h \in \mathcal{K}_k(s)} P_h}
+\end{equation}
+is a direct cannibalization index, computable before a candidate site is
+committed (Figure~\ref{fig:kring}). The same primitive defines
+fulfillment zones for distribution centers and dispatch clusters for
+field-service teams.
+
+\subsection{Targeting Gain Curves}
+
+Finally, the spine makes targeting efficiency measurable. Rank cells by
+descending $P_h$ and let $G(x)$ be the share of total population contained
+in the top $x$ share of land area; the administrative counterpart ranks
+whole districts by mean density and accumulates entire polygons. The gap
+between the two curves (Figure~\ref{fig:gain}) is the price of being
+forced to buy geography in district-sized blocks --- it bounds the
+achievable precision of geofenced media, sampling campaigns, and coverage
+commitments under each geography.
+
+\begin{figure}[t]
+  \centering
+  \resizebox{\columnwidth}{!}{\input{figures/fig-kring.tex}}
+  \caption{$k$-ring catchment overlap between two stores four cells apart:
+    cells within $k \le 2$ of each store, with the shared cell marking the
+    cannibalization zone.}
+  \label{fig:kring}
+\end{figure}
+
+% ============================================================================
+\section{Case Study: The Western Jakarta--Tangerang Corridor}
+\label{sec:casestudy}
+
+We exercise the full spine workflow on a deterministic synthetic corridor
+styled on the western Jakarta--Tangerang conurbation: 232 land cells at
+resolution~8 (${\sim}171$\,km$^2$) between a masked Java Sea coastline and
+an inland fringe, holding 1.61 million synthetic residents. The surface
+composites five density centers --- a CBD core, western
+(``Tangerang-side''), eastern, and southern sub-centers, and an infill
+corridor --- over a noisy urban baseline. Twelve stores (S01--S12) cluster
+in the CBD, the west, and the south; \emph{the eastern sub-center has
+none}, a deliberate gap the analysis should rediscover. All data are
+generated by a seeded script (\texttt{generate\_figures.py}), so every
+number and figure in this section is exactly reproducible; the workflow,
+not the synthetic magnitudes, is the claim being demonstrated.
+
+\subsection{Layer 1: Population}
+
+Figure~\ref{fig:population} shows the demand surface with the store
+network overlaid. Even at a glance the resolution-8 grid conveys what
+district aggregation cannot (compare Figure~\ref{fig:maup}a): the CBD
+gradient, the three secondary peaks, and the store network's western bias
+are all legible because every cell is the same size.
+
+\subsection{Layer 2: Revenue, Joined on the Spine}
+
+Applying the capture model of Eq.~\eqref{eq:capture} with decay length
+$\tau = 1.55$ cells (${\sim}1.5$\,km) yields IDR~507.8\,bn of monthly
+revenue attributed across cells --- Figure~\ref{fig:overlay} renders it as
+bubbles over the population fill. The join that produces this figure is
+one line of SQL on the spine: revenue facts and population both keyed by
+the same H3 string. The overlay already telegraphs the finding: the
+eastern population peak carries essentially no revenue mass, and its
+cells are outlined as whitespace.
+
+\subsection{Layer 3: Classification}
+
+Applying Eq.~\eqref{eq:class} with the 60th-percentile population
+threshold ($P^{*} = 7{,}076$ per cell) and the 40th-percentile per-capita
+revenue threshold ($r^{*} = $ IDR~136{,}472/person/month) partitions the
+corridor into 77 penetrated, 13 under-penetrated, 3 whitespace, and 139
+low-priority cells (Figure~\ref{fig:classification}). The scatter view
+(Figure~\ref{fig:scatter}) shows the same partition in metric space:
+whitespace cells sit far right on the population axis at exactly zero
+captured revenue --- populous, unserved, and invisible to any analysis
+keyed on served territory.
+
+\subsection{Sizing the Opportunity}
+
+The three whitespace cells hold 23{,}210 residents --- only 1.4\% of
+corridor population, but concentrated in the eastern sub-center at
+walkable density. At the served-cell average of IDR~361{,}662 per person
+per month, closing them is worth ${\sim}$IDR~8.4\,bn of monthly revenue,
+before counting the 13 under-penetrated cells (136{,}164 residents
+currently monetizing below $r^{*}$). This is the strategic deliverable of
+the spine: not a map, but a ranked, priced shortlist of cells --- each
+${\sim}0.74$\,km$^2$, small enough to visit, audit, and act on.
+
+\begin{figure*}[t]
+  \centering
+  \resizebox{0.86\textwidth}{!}{\input{figures/fig-population.tex}}
+  \caption{Synthetic population surface of the study corridor on H3
+    resolution-8 cells (${\sim}0.74$\,km$^2$ each), with the existing store
+    network overlaid.}
+  \label{fig:population}
+\end{figure*}
+
+\begin{figure*}[t]
+  \centering
+  \resizebox{0.86\textwidth}{!}{\input{figures/fig-overlay.tex}}
+  \caption{Joining the two datasets on the spine: population fill, captured
+    monthly revenue as bubbles, and whitespace cells outlined.}
+  \label{fig:overlay}
+\end{figure*}
+
+\begin{figure*}[t]
+  \centering
+  \resizebox{0.86\textwidth}{!}{\input{figures/fig-classification.tex}}
+  \caption{Cell-level penetration classification derived from the joined
+    population and revenue layers.}
+  \label{fig:classification}
+\end{figure*}
+
+\begin{figure}[t]
+  \centering
+  \resizebox{\columnwidth}{!}{\input{figures/fig-scatter.tex}}
+  \caption{Population versus captured revenue per cell, colored by
+    classification; whitespace cells sit on the zero-revenue axis at high
+    population.}
+  \label{fig:scatter}
+\end{figure}
+
+% ============================================================================
+\section{Targeting Efficiency and Field Applications}
+\label{sec:applications}
+
+\subsection{The Price of District-Sized Blocks}
+
+The gain curves of Figure~\ref{fig:gain} quantify what administrative
+targeting costs. Ranking resolution-8 cells by density, 50\% of corridor
+population is reached within 25.4\% of the land area (43\,km$^2$);
+accumulating whole districts requires 38.4\% (66\,km$^2$) for the same
+reach. At the 75\% reach level the gap persists: 47.0\% of area
+(80\,km$^2$) for hexagons versus 57.8\% (99\,km$^2$) for districts
+(Figure~\ref{fig:bars}). Every campaign whose cost scales with area ---
+geofenced digital media, leaflet drops, field sampling, canvassing
+coverage --- runs ${\sim}$1.2--1.5$\times$ leaner on the spine, and the
+advantage widens with the size disparity of the underlying districts,
+which on the real archipelago is far larger than in this stylized
+corridor.
+
+\subsection{Retail Footprint}
+
+The classification map is the expansion agenda: whitespace cells are
+site-selection candidates, scored by $P_h$ and validated in the field.
+Before committing a site, Eq.~\eqref{eq:cannibal} prices its interaction
+with the existing network --- in the stylized configuration of
+Figure~\ref{fig:kring}, two stores four cells (${\sim}3.7$\,km) apart at
+$k \le 2$ share a single cell, roughly 5\% of each catchment, a
+comfortable spacing; candidate sites closer to existing stores see
+$\chi$ rise steeply. The same join against an indexed competitor registry
+yields competitor-density covariates for revenue modeling.
+
+\subsection{Network Logistics}
+
+Distribution-center fulfillment zones are $k$-ring (or isochrone-refined)
+cell sets with known population, order mass, and revenue --- so an SLA
+commitment is a measurable statement about a specific set of hexagons
+rather than an aspiration about a \emph{kecamatan}. Daily delivery
+manifests group naturally by cell for route assignment, and demand
+staging by SKU follows the per-cell order history. The handoff to fleet
+optimization is direct: the spine's demand masses $W_h$ are exactly the
+gravitational masses consumed by the routing engine
+of~\cite{terra2026}.
+
+\subsection{Dynamic Resource Allocation}
+
+Because spine metrics refresh as materialized views, the same machinery
+serves operational tempo: field-service and hypercare technicians
+assigned to cell clusters during go-lives, and supply--demand imbalances
+(transport availability versus order volume per cell) triggering surge
+responses in near real time. The unit of allocation is always the same
+auditable object --- an H3 cell --- from strategy deck to dispatch board.
+
+\begin{figure}[t]
+  \centering
+  \resizebox{\columnwidth}{!}{\input{figures/fig-gain.tex}}
+  \caption{Population-reach gain curves: share of corridor population
+    reached as a function of land area targeted, cell-by-cell on H3 versus
+    whole administrative districts.}
+  \label{fig:gain}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \resizebox{0.94\columnwidth}{!}{\input{figures/fig-bars.tex}}
+  \caption{Geofenced area required to reach 50\% and 75\% of corridor
+    population under hexagon-level versus district-level targeting.}
+  \label{fig:bars}
+\end{figure}
+
+% ============================================================================
+\section{Implementation Roadmap}
+\label{sec:roadmap}
+
+The spine earns trust incrementally; each phase ships a usable artifact.
+
+\textbf{Phase 1 --- Proof of concept (one region, one KPI).} Build the
+spine for a single high-density region (Greater Jakarta), join internal
+store revenue against open population data~\cite{kontur} at resolution~8,
+and publish one governed metric --- revenue per capita per cell --- with
+the classification map of Eq.~\eqref{eq:class}. Everything in
+Section~\ref{sec:casestudy} is achievable in this phase with no new
+infrastructure; the deliverable is the whitespace shortlist and the
+stakeholder conversation it starts.
+
+\textbf{Phase 2 --- Pipeline automation.} Move indexing to ingestion:
+nightly batch transforms convert raw POS/ERP coordinates into H3 strings
+inside the warehouse, the spine dimension and metric marts become
+scheduled materialized views, and the classification thresholds
+$(P^{*}, r^{*})$ move from notebook constants to versioned configuration.
+Data-quality gates (geocode validity, coordinate-swap detection,
+cell-coverage drift) are attached to the load, because from this phase on
+the spine is load-bearing.
+
+\textbf{Phase 3 --- National scale and advanced primitives.} Extend the
+spine across the operating territory, activate $k$-ring analytics
+(cannibalization screens, DC fulfillment zones), calibrate the decay
+length $\tau$ and store attractiveness $a_s$ per format from delivery and
+loyalty data, and connect downstream consumers --- media geofencing
+exports, dispatch clustering, and the routing engine
+of~\cite{terra2026}. Regional divergence matters at this stage: dense
+Java corridors and sparse eastern territories warrant different working
+resolutions, selected per region exactly as the companion framework
+selects routing parameters.
+
+% ============================================================================
+\section{Limitations and Future Work}
+\label{sec:limitations}
+
+\textbf{Synthetic calibration.} The corridor is a stylized artifact:
+magnitudes (ARPU, opportunity sizing) illustrate the workflow, not the
+market. The immediate next step is re-running the identical SQL against
+production POS data and Kontur population --- the figures regenerate
+unchanged because they consume only the spine schema.
+
+\textbf{Grid-distance decay.} Eq.~\eqref{eq:capture} decays with hex-grid
+distance, which ignores rivers, toll barriers, and one-way systems.
+Isochrone-refined kernels (travel-time bands from the routing stack) are
+a drop-in replacement where site decisions are close.
+
+\textbf{Ecological inference.} Cell-level correlation is not
+customer-level behavior; resolution-8 aggregates ${\sim}$thousands of
+residents, and inferences about individuals from cell metrics commit the
+ecological fallacy. The spine bounds, it does not replace,
+customer-level analytics.
+
+\textbf{Boundary effects at coarse rollups.} Aperture-7 parentage is
+approximate at cell edges; metrics rolled up several resolutions can
+shift small mass between parents. For executive rollups this is
+immaterial; for contractual SLA geometry, compute at the working
+resolution.
+
+\textbf{Threshold sensitivity.} The four-class taxonomy inherits the
+percentile choices $(P^{*}, r^{*})$; a sensitivity sweep belongs in the
+Phase-2 automation so that the whitespace list ships with its stability
+band.
+
+% ============================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+Strategic market analysis fails quietly when its spatial unit is wrong:
+district choropleths that hide urban demand, catchments amputated at
+provincial borders, and histories severed by \emph{pemekaran} are not
+data problems but geometry problems. The H3 Spine fixes the geometry
+once, at ingestion, and lets everything downstream --- population joins,
+revenue capture, penetration classification, cannibalization screens,
+targeting gain curves --- run as ordinary SQL on one shared key. On a
+reproducible Jakarta--Tangerang corridor the approach rediscovered a
+deliberately planted market gap, priced it at ${\sim}$IDR~8.4\,bn per
+month, and cut the area cost of reaching half the population by a third
+relative to district targeting. The same cells then feed routing,
+dispatch, and geofencing without translation. Hexagons are not the
+insight; the discipline of one fixed, uniform, hierarchical spatial key
+under every layer of the business is --- and the corridor study shows it
+can be stood up with open data and a weekend of SQL.
+
+% ============================================================================
+\begin{thebibliography}{9}
+\small
+
+\bibitem{brodsky2018}
+I.~Brodsky,
+``H3: Uber's Hexagonal Hierarchical Spatial Index,''
+Uber Engineering Blog, 2018.
+[Online]. Available: \url{https://www.uber.com/blog/h3/}
+
+\bibitem{h3docs}
+Uber Technologies,
+\emph{H3 Documentation: Tables of Cell Statistics Across Resolutions}.
+[Online]. Available: \url{https://h3geo.org/docs/core-library/restable/}
+
+\bibitem{crawford2023}
+M.~Crawford,
+``Use H3 to Create Multiresolution Hexagon Grids in ArcGIS Pro 3.1,''
+Esri ArcGIS Blog, 2023.
+[Online]. Available:
+\url{https://www.esri.com/arcgis-blog/products/arcgis-pro/analytics/use-h3-to-create-multiresolution-hexagon-grids-in-arcgis-pro-3-1}
+
+\bibitem{esriwhyhex}
+Esri,
+\emph{Why Hexagons? ArcGIS Pro Tool Reference}.
+[Online]. Available:
+\url{https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-statistics/h-whyhexagons.htm}
+
+\bibitem{openshaw1984}
+S.~Openshaw,
+\emph{The Modifiable Areal Unit Problem}, ser.\ CATMOG no.~38.
+Norwich, UK: Geo Books, 1984.
+
+\bibitem{reilly1931}
+W.~J. Reilly,
+\emph{The Law of Retail Gravitation}.
+New York, NY: Knickerbocker Press, 1931.
+
+\bibitem{huff1964}
+D.~L. Huff,
+``Defining and Estimating a Trading Area,''
+\emph{Journal of Marketing}, vol.~28, no.~3, pp.~34--38, 1964.
+
+\bibitem{zipf1946}
+G.~K. Zipf,
+``The $P_1 P_2 / D$ Hypothesis: On the Intercity Movement of Persons,''
+\emph{American Sociological Review}, vol.~11, no.~6, pp.~677--686, 1946.
+
+\bibitem{kontur}
+Kontur Inc.,
+\emph{Kontur Population: Global Population Density for 400\,m H3 Hexagons}.
+[Online]. Available: \url{https://data.humdata.org/dataset/kontur-population-dataset}
+
+\bibitem{snowflakeh3}
+Snowflake Inc.,
+\emph{H3 Geospatial Functions --- Snowflake Documentation}.
+[Online]. Available:
+\url{https://docs.snowflake.com/en/sql-reference/functions-geospatial}
+
+\bibitem{bigqueryjslibs}
+CARTO,
+\emph{Analytics Toolbox for BigQuery: H3 Module}.
+[Online]. Available: \url{https://docs.carto.com/analytics-toolbox-bigquery}
+
+\bibitem{terra2026}
+A.~Dobson,
+``When a Jakarta Kilometer Isn't an Ambon Kilometer: Context-Aware Fleet
+Routing Across Indonesia's Asymmetric Geographies,''
+IT Paragon Enterprise Logistics Research, working paper, 2026.
+
+\bibitem{haklay2008}
+M.~Haklay and P.~Weber,
+``OpenStreetMap: User-Generated Street Maps,''
+\emph{IEEE Pervasive Computing}, vol.~7, no.~4, pp.~12--18, 2008.
+
+\end{thebibliography}
+
+\end{document}
