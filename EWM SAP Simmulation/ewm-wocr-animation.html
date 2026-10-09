@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAP EWM – Order to Picking Simulation</title>
+<style>
+  :root {
+    --bg:#f4f6f9; --panel:#ffffff; --ink:#1c2330; --muted:#5b6577; --bd:#d6dbe4;
+    --accent:#4b3fd6; --ok:#1f9d63; --bad:#d64545;
+    --do-bg:#d5f7f3; --do-bd:#6fd3c8;
+    --wt-bg:#dcd3fb; --wt-bd:#7a5af0;
+    --wo1:#1f7ae0; --wo2:#d9730d;
+    --d124:#14a89a; --d125:#8b5cf6; --d126:#d99a00;
+    --floor:#eef1f5; --aisle:#ffffff; --rack:#cfd6e2; --rack-bd:#9aa6ba;
+    --zp:rgba(31,122,224,.08); --zr:rgba(217,115,13,.09);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#12161d; --panel:#1a202a; --ink:#e8ecf3; --muted:#9aa4b5; --bd:#2d3644;
+      --accent:#a99cff; --ok:#3ccf8e; --bad:#ff7070;
+      --do-bg:#12423e; --do-bd:#2fa398;
+      --wt-bg:#34286b; --wt-bd:#8d74ff;
+      --wo1:#5aa2ff; --wo2:#ff9d45;
+      --d124:#2fd0c0; --d125:#a99cff; --d126:#ffc233;
+      --floor:#202734; --aisle:#2a3342; --rack:#3a4558; --rack-bd:#556074;
+      --zp:rgba(90,162,255,.10); --zr:rgba(255,157,69,.10);
+    }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  .wrap { max-width:1320px; margin:0 auto; padding:20px 16px 40px; }
+  h1 { font-size:21px; margin:0 0 2px; }
+  .sub { color:var(--muted); margin:0 0 12px; }
+
+  .tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+  .tab { border-radius:999px; padding:5px 14px; font-size:13px; }
+  .tab.on { background:var(--accent); color:#fff; }
+  .info { display:flex; gap:18px; flex-wrap:wrap; font-size:13px; padding:8px 12px; margin-bottom:12px; border:1px solid var(--bd);
+          border-radius:8px; background:var(--panel); }
+  .info b { color:var(--accent); }
+
+  .bar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+  button, select { font:inherit; border:1px solid var(--accent); background:transparent; color:var(--accent);
+                   padding:6px 14px; border-radius:8px; cursor:pointer; }
+  select { padding:6px 8px; }
+  button.primary { background:var(--accent); color:#fff; }
+  button:disabled { opacity:.4; cursor:default; }
+  .steps { display:flex; gap:6px; margin-left:8px; flex-wrap:wrap; }
+  .st { font-size:12px; padding:3px 9px; border-radius:999px; border:1px solid var(--bd); color:var(--muted); transition:.3s; white-space:nowrap; }
+  .st.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+  .caption { padding:10px 14px; border-left:4px solid var(--accent); background:color-mix(in srgb,var(--accent) 8%,transparent);
+             border-radius:4px; margin-bottom:14px; min-height:62px; }
+  .caption b { color:var(--accent); }
+
+  .grid { display:grid; grid-template-columns:minmax(360px,1fr) minmax(480px,1.3fr); gap:16px; align-items:start; }
+  @media (max-width:980px) { .grid { grid-template-columns:1fr; } .mapcol { order:-1; position:static !important; } }
+
+  .mapcol { position:sticky; top:12px; }
+  .card { background:var(--panel); border:1px solid var(--bd); border-radius:10px; padding:12px 14px; }
+  .banner { display:flex; gap:10px; align-items:center; background:var(--do-bg); border:1px solid var(--do-bd); border-radius:8px;
+            margin-bottom:10px; transform:translateY(-8px); opacity:0; max-height:0; overflow:hidden; padding:0 12px; transition:all .6s; }
+  .banner.show { transform:none; opacity:1; max-height:60px; padding:8px 12px; }
+
+  svg#map { width:100%; height:auto; display:block; }
+  .legend { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-top:8px; }
+  .legend i { display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-2px; margin-right:4px; }
+
+  .sec { margin-bottom:12px; display:none; }
+  .sec.show { display:block; animation:rise .5s ease; }
+  @keyframes rise { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+  .sec h3 { margin:0 0 8px; font-size:14px; }
+  .sec h3 span { display:inline-flex; width:22px; height:22px; border-radius:50%; background:var(--accent); color:#fff; align-items:center; justify-content:center; font-size:12px; margin-right:6px; }
+  .meta { color:var(--muted); font-size:12.5px; margin-bottom:6px; }
+
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  th { text-align:left; color:var(--muted); font-weight:500; padding:3px 6px; border-bottom:1px solid var(--bd); }
+  td { padding:4px 6px; border-bottom:1px solid color-mix(in srgb,var(--bd) 60%,transparent); vertical-align:top; }
+  tr.hid { display:none; }
+  tr.pick td { background:color-mix(in srgb,var(--ok) 16%,transparent); font-weight:600; }
+  tr.pick td:last-child::after { content:" ✓"; color:var(--ok); }
+  tr.skip td { background:color-mix(in srgb,var(--bad) 12%,transparent); color:var(--bad); text-decoration:line-through; }
+  tr.skip td:last-child::after { content:attr(data-why); text-decoration:none; display:inline-block; margin-left:6px; font-size:11px; }
+
+  .dotag { display:inline-block; font-size:11px; padding:0 7px; border-radius:999px; border:1px solid var(--c);
+           background:color-mix(in srgb,var(--c) 16%,transparent); white-space:nowrap; margin-right:3px; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 8px; }
+  .chip { background:var(--do-bg); border:1px solid var(--do-bd); padding:2px 9px; border-radius:6px; font-size:12px; }
+  .sku { border:1px solid var(--bd); border-radius:8px; padding:8px 10px; margin-bottom:8px; display:none; }
+  .sku.show { display:block; animation:rise .4s ease; }
+  .sku h4 { margin:0 0 4px; font-size:13px; }
+  .rule { font-size:12px; color:var(--muted); margin-top:4px; opacity:0; transition:opacity .5s; }
+  .rule.show { opacity:1; }
+  .rule b { color:var(--ink); }
+
+  .wtrow, .worow { display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:6px; margin-bottom:6px;
+                   background:var(--wt-bg); border:1px solid var(--wt-bd); font-size:13px; opacity:0; transform:translateX(-12px); transition:.4s; }
+  .wtrow.show, .worow.show { opacity:1; transform:none; }
+  .wtrow small { color:var(--muted); margin-left:auto; white-space:nowrap; }
+  .worow { background:var(--panel); border-color:var(--bd); }
+  .tag { font-size:11px; padding:1px 7px; border-radius:999px; background:var(--panel); border:1px solid var(--bd); white-space:nowrap; }
+  .tag.p { border-color:var(--wo1); color:var(--wo1); } .tag.r { border-color:var(--wo2); color:var(--wo2); }
+  .status { margin-left:auto; font-size:11px; padding:1px 8px; border-radius:999px; background:var(--panel); border:1px solid var(--bd); }
+  .status.done { background:var(--ok); border-color:var(--ok); color:#fff; }
+
+  .wo { border:2px solid; border-radius:8px; padding:8px 10px; margin-bottom:8px; opacity:0; transform:scale(.96); transition:.5s; }
+  .wo.show { opacity:1; transform:none; }
+  .wo.w1 { border-color:var(--wo1); } .wo.w2 { border-color:var(--wo2); }
+  .wo h4 { margin:0 0 6px; font-size:13px; display:flex; gap:8px; align-items:center; }
+  .wo ol { margin:0; padding-left:22px; font-size:12.5px; }
+  .cfg { background:var(--floor); border-radius:8px; padding:8px 10px; font-size:12.5px; margin-top:8px; display:none; }
+  .cfg div { margin:2px 0; }
+  .callout { background:color-mix(in srgb,var(--accent) 9%,transparent); border-radius:8px; padding:8px 10px; font-size:12.5px; margin-top:8px; }
+  .hurow { opacity:0; transition:opacity .5s; } .hurow.show { opacity:1; }
+  .hurow.hid { display:table-row; }
+
+  ul.log { list-style:none; margin:8px 0 0; padding:6px 10px; font:12px/1.5 ui-monospace,Menlo,Consolas,monospace; max-height:150px; overflow:auto;
+           background:var(--floor); border-radius:8px; }
+  ul.log li { animation:rise .3s; }
+  ul.log .p1 { color:var(--wo1); } ul.log .p2 { color:var(--wo2); }
+  .sum { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+  .sum .chip { background:var(--ok); border-color:var(--ok); color:#fff; font-weight:600; }
+  .cmp { display:flex; gap:10px; margin-top:8px; flex-wrap:wrap; }
+  .cmp div { flex:1 1 150px; border:1px solid var(--bd); border-radius:8px; padding:6px 10px; text-align:center; }
+  .cmp b { display:block; font-size:22px; color:var(--accent); }
+
+  /* SVG map */
+  .floor { fill:var(--floor); }
+  .zone { stroke:none; transition:fill .6s, opacity .6s; }
+  .zone.p { fill:var(--zp); } .zone.r { fill:var(--zr); }
+  .zone.off { opacity:0; }
+  .zone.pulse { animation:zp 1.4s ease 2; }
+  @keyframes zp { 50% { opacity:.35; } }
+  .aisle { fill:var(--aisle); }
+  .center { stroke:var(--rack-bd); stroke-width:1; stroke-dasharray:6 6; opacity:.5; }
+  .bin { fill:var(--rack); stroke:var(--rack-bd); stroke-width:1; transition:fill .4s, stroke .4s; }
+  .bin.cand { stroke:var(--accent); stroke-dasharray:3 2; stroke-width:1.5; }
+  .bin.skip { stroke:var(--bad); stroke-dasharray:3 2; stroke-width:1.5; }
+  .bin.chosen { fill:color-mix(in srgb,var(--ok) 35%,var(--rack)); stroke:var(--ok); stroke-width:2; stroke-dasharray:none; }
+  .bin.done { fill:var(--ok); }
+  .t { font-size:9px; fill:var(--muted); font-family:inherit; }
+  .t.lg { font-size:11px; font-weight:600; }
+  .t.zt { font-size:12px; font-weight:700; letter-spacing:.03em; }
+  .cbadge circle { fill:var(--accent); } .cbadge.skip circle { fill:var(--bad); }
+  .cbadge text { fill:#fff; font-size:9px; font-weight:700; text-anchor:middle; }
+  .badge rect { fill:var(--wt-bg); stroke:var(--wt-bd); stroke-width:1.2; transition:.4s; }
+  .badge text { font-size:9px; font-weight:700; fill:var(--ink); text-anchor:middle; }
+  .badge.a-p rect { stroke:var(--wo1); } .badge.a-r rect { stroke:var(--wo2); }
+  .badge.wo1 rect { fill:var(--wo1); stroke:var(--wo1); } .badge.wo2 rect { fill:var(--wo2); stroke:var(--wo2); }
+  .badge.wo1 text, .badge.wo2 text, .badge.done text { fill:#fff; }
+  .badge.done rect { fill:var(--ok); stroke:var(--ok); }
+  .fade { opacity:0; transition:opacity .5s; } .fade.in { opacity:1; }
+  .route { fill:none; stroke-width:3; stroke-dasharray:7 6; opacity:.55; stroke-linejoin:round; }
+  .trail { fill:none; stroke-width:4; stroke-linejoin:round; stroke-linecap:round; }
+  .seq circle { stroke:#fff; stroke-width:1.5; } .seq text { fill:#fff; font-size:10px; font-weight:700; text-anchor:middle; }
+  .picker circle { stroke:#fff; stroke-width:2; } .picker text { fill:#fff; font-size:10px; font-weight:700; text-anchor:middle; }
+  .picker .cnt { font-size:9px; fill:var(--ink); font-weight:700; text-anchor:start; }
+  .stage { fill:color-mix(in srgb,var(--accent) 10%,var(--floor)); stroke:var(--accent); stroke-dasharray:5 4; }
+  .pack { fill:color-mix(in srgb,var(--ok) 9%,var(--floor)); stroke:var(--ok); stroke-dasharray:5 4; }
+  .lane { fill:none; stroke:var(--rack-bd); stroke-dasharray:2 3; }
+  .chipS rect.bg { stroke:none; } .chipS text { fill:#fff; font-size:9px; font-weight:600; text-anchor:middle; }
+  .fly { transition:transform .9s cubic-bezier(.5,.1,.3,1), opacity .4s; }
+  .ft { fill:#fff; font-size:9px; font-weight:700; }
+  .pallet { fill:#a6794a; }
+  .tote rect { fill:var(--accent); stroke:#fff; stroke-width:1.5; } .tote text { fill:#fff; font-size:8px; font-weight:700; text-anchor:middle; }
+  .pass { fill:none; stroke:var(--accent); stroke-width:2; stroke-dasharray:3 3; }
+  .note { margin-top:16px; color:var(--muted); font-size:12.5px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>SAP EWM – From Order to Picking and Packing</h1>
+  <p class="sub">Outbound delivery → stock removal → warehouse tasks → WOCR → warehouse orders → picking in the aisles → packing</p>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="info" id="info"></div>
+
+  <div class="bar">
+    <button class="primary" id="btnPlay">▶ Play</button>
+    <button id="btnNext">Next step</button>
+    <button id="btnReset">⟲ Reset</button>
+    <label style="color:var(--muted);font-size:12px">Speed
+      <select id="speed"><option value="0.6">0.6×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>
+    <div class="steps" id="steps"></div>
+  </div>
+
+  <div class="caption" id="caption"></div>
+
+  <div class="grid">
+    <div class="datacol" id="datacol"></div>
+    <div class="mapcol">
+      <div class="card">
+        <div class="banner" id="banner"><span style="font-size:20px">📨</span><div id="bannerTxt"></div></div>
+        <svg id="map" viewBox="0 0 730 556" role="img" aria-label="Warehouse floor plan with four aisles, goods issue staging and a pack station"></svg>
+        <div class="legend">
+          <span><i style="background:var(--zp);border:1px solid var(--wo1)"></i>PCK-P zone (piece picking)</span>
+          <span><i style="background:var(--zr);border:1px solid var(--wo2)"></i>PCK-R zone (rack picking)</span>
+          <span><i style="background:var(--rack);border:1px solid var(--rack-bd)"></i>Rack bin</span>
+          <span><i style="background:var(--aisle);border:1px solid var(--rack-bd)"></i>Aisle (gangway)</span>
+          <span><i style="background:var(--d124)"></i><i style="background:var(--d125)"></i><i style="background:var(--d126)"></i>Delivery colour</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">The DO quantities, UoM conversions and the WT / WO grouping of scenario 1 follow the diagram. Bins, batch stock, dates, the layout, consolidation groups and WOCR settings are made-up examples for illustration.
+    Details of the strategies are in <i>ewm-wocr-and-picking-strategy.md</i>.</p>
+</div>
+
+<script>
+/* ======================= scenario data ======================= */
+const UOM = ['SKU B: 1 IBX = 10 PC', 'SKU C: 1 CAR = 20 PC', 'SKU D: 1 IBX = 10 PC'];
+const stdStock = {
+  A: { need:'2 PC', rule:'<b>FIFO</b> – the oldest goods receipt is picked first.',
+       c:[ {bin:'01-R2', batch:'AK12A', qty:'40 PC',  d:'02 Aug', pick:1}, {bin:'02-R1', batch:'AK19C', qty:'120 PC', d:'10 Sep'} ] },
+  B: { need:'30 PC = 3 IBX', rule:'<b>FIFO</b> in the rack storage type. Alt UoM gives quantity classification “inner box”, so the system picks whole IBX.',
+       c:[ {bin:'03-L3', batch:'KL09A', qty:'12 IBX', d:'15 Aug', pick:1}, {bin:'04-L6', batch:'KL11B', qty:'20 IBX', d:'20 Sep'} ] },
+  C: { need:'50 PC = 2 CAR + 10 PC', rule:'<b>Partial quantities first</b>: full cartons (2 × 20 PC) come from the rack bin, the 10 PC remainder from the loose bin – <b>2 WTs, same batch</b>.',
+       c:[ {bin:'03-R5', batch:'JH23A', qty:'6 CAR', d:'20 Aug', pick:1}, {bin:'02-L4', batch:'JH23A', qty:'35 PC', d:'20 Aug', pick:1}, {bin:'04-L2', batch:'JH30B', qty:'10 CAR', d:'25 Sep'} ] },
+  D: { need:'10 PC = 1 IBX', rule:'<b>FIFO</b>; 10 PC equals exactly one inner box.',
+       c:[ {bin:'04-R2', batch:'KM05B', qty:'8 IBX', d:'30 Aug', pick:1}, {bin:'03-L1', batch:'KM07A', qty:'5 IBX', d:'12 Sep'} ] },
+};
+const stdDO = { key:124, id:'PM#124', shipTo:'Store 17', cg:'CG-124', items:[
+  { sku:'A', qty:'2 PC',  conv:'' }, { sku:'B', qty:'30 PC', conv:'= 3 IBX' },
+  { sku:'C', qty:'50 PC', conv:'= 2 CAR + 10 PC' }, { sku:'D', qty:'10 PC', conv:'= 1 IBX' } ] };
+const stdWTs = [
+  { id:1, sku:'A', qty:'2 PC',  bin:'01-R2', batch:'AK12A', area:'P', wo:1, dos:[124] },
+  { id:2, sku:'B', qty:'3 IBX', bin:'03-L3', batch:'KL09A', area:'R', wo:2, dos:[124] },
+  { id:3, sku:'C', qty:'2 CAR', bin:'03-R5', batch:'JH23A', area:'R', wo:2, dos:[124] },
+  { id:4, sku:'C', qty:'10 PC', bin:'02-L4', batch:'JH23A', area:'P', wo:1, dos:[124] },
+  { id:5, sku:'D', qty:'1 IBX', bin:'04-R2', batch:'KM05B', area:'R', wo:2, dos:[124] },
+];
+const twoLanes = [ { id:'wo1', label:'lane WO1', x:48, w:300 }, { id:'wo2', label:'lane WO2', x:388, w:296 } ];
+const cfgStd = [
+  '<b>PCK-P</b> → WOCR <b>Z-PICK-P</b>: category <i>pick path</i> · limit max 10 WT · WO sort: aisle ↑, bin ↑',
+  '<b>PCK-R</b> → WOCR <b>Z-PICK-R</b>: category <i>pick path</i> · limit max 10 WT · WO sort: aisle ↑, bin ↑',
+];
+const pickPt = { x:365, y:340 };
+
+const SC = {
+  s1: {
+    tab:'1 · Single delivery', idea:'One delivery, two warehouse orders picked in parallel, then packed on one pallet.',
+    feature:'WOCR by activity area · stock removal · packing (consolidation group)',
+    dos:[stdDO], stock:stdStock, dateCol:'GR date', wts:stdWTs,
+    wos:{ 1:{ area:'PCK-P', picker:'Picker 1', seq:[1,4] }, 2:{ area:'PCK-R', picker:'Picker 2', seq:[3,2,5] } },
+    cfg:cfgStd, lanes:twoLanes,
+    stageLane: w => 'wo' + w.wo, packLane: it => 'wo' + wtById(it.wt).wo,
+    hus:[ { id:'HU-1', label:'Store 17 · CG-124', dos:[124], items:[
+      {do:124,sku:'A',qty:'2 PC',wt:1}, {do:124,sku:'B',qty:'3 IBX',wt:2}, {do:124,sku:'C',qty:'2 CAR',wt:3}, {do:124,sku:'C',qty:'10 PC',wt:4}, {do:124,sku:'D',qty:'1 IBX',wt:5} ] } ],
+    packNote:'A single delivery has a single consolidation group, so everything ends up on one shipping HU (pallet).',
+    steps:['order','stock','wt','area','wo','pick','stage','pack'], cap:{}
+  },
+  s2: {
+    tab:'2 · Same ship-to → one pallet', idea:'Three deliveries: two for Store 17, one for Store 22. The same ship-to means the same consolidation group, so those goods share one pallet.',
+    feature:'Consolidation group (/SCWM/DSGR) · packing at the pack station · shipping HU',
+    dos:[
+      { key:124, id:'PM#124', shipTo:'Store 17', cg:'CG-ST17', items:[ {sku:'A',qty:'2 PC',conv:''}, {sku:'B',qty:'30 PC',conv:'= 3 IBX'} ] },
+      { key:125, id:'PM#125', shipTo:'Store 17', cg:'CG-ST17', items:[ {sku:'C',qty:'20 PC',conv:'= 1 CAR'}, {sku:'D',qty:'10 PC',conv:'= 1 IBX'} ] },
+      { key:126, id:'PM#126', shipTo:'Store 22', cg:'CG-ST22', items:[ {sku:'A',qty:'4 PC',conv:''}, {sku:'D',qty:'10 PC',conv:'= 1 IBX'} ] } ],
+    stock:{
+      A:{ need:'2 PC (PM#124) + 4 PC (PM#126)', rule:'<b>FIFO</b> – both WTs come from the same oldest bin.', c:stdStock.A.c },
+      B:{ need:'30 PC = 3 IBX', rule:stdStock.B.rule, c:stdStock.B.c },
+      C:{ need:'20 PC = 1 CAR', rule:'<b>By quantity</b>: exactly one full carton, so it is taken whole from the rack bin.', c:[ {bin:'03-R5', batch:'JH23A', qty:'6 CAR', d:'20 Aug', pick:1}, {bin:'04-L2', batch:'JH30B', qty:'10 CAR', d:'25 Sep'} ] },
+      D:{ need:'10 PC (PM#125) + 10 PC (PM#126) = 2 × 1 IBX', rule:'<b>FIFO</b> – one WT per delivery, same bin.', c:stdStock.D.c },
+    }, dateCol:'GR date',
+    wts:[
+      { id:1, sku:'A', qty:'2 PC',  bin:'01-R2', batch:'AK12A', area:'P', wo:1, dos:[124] },
+      { id:2, sku:'B', qty:'3 IBX', bin:'03-L3', batch:'KL09A', area:'R', wo:2, dos:[124] },
+      { id:3, sku:'C', qty:'1 CAR', bin:'03-R5', batch:'JH23A', area:'R', wo:2, dos:[125] },
+      { id:4, sku:'D', qty:'1 IBX', bin:'04-R2', batch:'KM05B', area:'R', wo:2, dos:[125] },
+      { id:5, sku:'A', qty:'4 PC',  bin:'01-R2', batch:'AK12A', area:'P', wo:1, dos:[126] },
+      { id:6, sku:'D', qty:'1 IBX', bin:'04-R2', batch:'KM05B', area:'R', wo:2, dos:[126] } ],
+    wos:{ 1:{ area:'PCK-P', picker:'Picker 1', seq:[1,5] }, 2:{ area:'PCK-R', picker:'Picker 2', seq:[3,2,4,6] } },
+    cfg:cfgStd, lanes:twoLanes,
+    stageLane: w => 'wo' + w.wo, packLane: it => 'wo' + wtById(it.wt).wo,
+    hus:[
+      { id:'HU-1', label:'Store 17 · CG-ST17', dos:[124,125], items:[ {do:124,sku:'A',qty:'2 PC',wt:1}, {do:124,sku:'B',qty:'3 IBX',wt:2}, {do:125,sku:'C',qty:'1 CAR',wt:3}, {do:125,sku:'D',qty:'1 IBX',wt:4} ] },
+      { id:'HU-2', label:'Store 22 · CG-ST22', dos:[126], items:[ {do:126,sku:'A',qty:'4 PC',wt:5}, {do:126,sku:'D',qty:'1 IBX',wt:6} ] } ],
+    packNote:'The consolidation group is assigned per delivery item. Here the rule is keyed on <b>ship-to</b>, so PM#124 and PM#125 (Store 17) are packed together; PM#126 (Store 22) is not.',
+    steps:['order','stock','wt','area','wo','pick','stage','pack'],
+    cap:{
+      order:'<b>1 · Orders arrive.</b> Three deliveries come in. Each item gets a <b>consolidation group</b>: PM#124 and PM#125 are both for Store 17 and get <b>CG-ST17</b>; PM#126 (Store 22) gets CG-ST22.',
+      pack:'<b>Packing.</b> The pack station builds shipping HUs by consolidation group. PM#124 and PM#125 share CG-ST17, so their goods go on <b>one pallet (HU-1)</b>. PM#126 is for another ship-to and gets its own pallet (HU-2).',
+    }
+  },
+  s3: {
+    tab:'3 · Batch picking (two-step)', idea:'Several deliveries are released together as a wave. The picker removes the <b>total</b> quantity once, then it is split per delivery in staging.',
+    feature:'Two-step picking: withdrawal WT, then allocation WTs · wave · fewer trips to the racks',
+    dos:[
+      { key:124, id:'PM#124', shipTo:'Store 17', cg:'CG-ST17', items:[ {sku:'A',qty:'2 PC',conv:''}, {sku:'B',qty:'30 PC',conv:'= 3 IBX'} ] },
+      { key:125, id:'PM#125', shipTo:'Store 17', cg:'CG-ST17', items:[ {sku:'A',qty:'3 PC',conv:''}, {sku:'B',qty:'20 PC',conv:'= 2 IBX'} ] },
+      { key:126, id:'PM#126', shipTo:'Store 22', cg:'CG-ST22', items:[ {sku:'A',qty:'5 PC',conv:''}, {sku:'B',qty:'10 PC',conv:'= 1 IBX'} ] } ],
+    stock:{
+      A:{ need:'2 + 3 + 5 = <b>10 PC</b> over 3 deliveries', rule:'<b>Two-step picking</b>: the requirements of all deliveries in the wave are added up and the total is removed <b>once</b> from the FIFO bin.', c:stdStock.A.c },
+      B:{ need:'30 + 20 + 10 PC = 60 PC = <b>6 IBX</b>', rule:'Same logic: <b>one withdrawal</b> of 6 IBX instead of three separate picks of 3, 2 and 1 IBX.', c:stdStock.B.c },
+    }, dateCol:'GR date',
+    wts:[
+      { id:1, sku:'A', qty:'10 PC', bin:'01-R2', batch:'AK12A', area:'P', wo:1, dos:[124,125,126] },
+      { id:2, sku:'B', qty:'6 IBX', bin:'03-L3', batch:'KL09A', area:'R', wo:2, dos:[124,125,126] } ],
+    wos:{ 1:{ area:'PCK-P', picker:'Picker 1', seq:[1] }, 2:{ area:'PCK-R', picker:'Picker 2', seq:[2] } },
+    cfg:[ '<b>Warehouse process type 2020</b> (withdrawal) · two-step picking active on warehouse level',
+          '<b>PCK-P / PCK-R</b> → WOCR by activity area as before; only <b>2 WTs</b> exist for the whole wave' ],
+    lanes:[ { id:'collect', label:'collective pick', x:48, w:190 }, { id:'do124', label:'PM#124', x:262, w:134 }, { id:'do125', label:'PM#125', x:406, w:134 }, { id:'do126', label:'PM#126', x:550, w:134 } ],
+    stageLane: () => 'collect', packLane: it => 'do' + it.do,
+    alloc:[ {do:124,sku:'A',qty:'2 PC'}, {do:124,sku:'B',qty:'3 IBX'}, {do:125,sku:'A',qty:'3 PC'}, {do:125,sku:'B',qty:'2 IBX'}, {do:126,sku:'A',qty:'5 PC'}, {do:126,sku:'B',qty:'1 IBX'} ],
+    hus:[
+      { id:'HU-1', label:'Store 17 · CG-ST17', dos:[124,125], items:[ {do:124,sku:'A',qty:'2 PC'}, {do:124,sku:'B',qty:'3 IBX'}, {do:125,sku:'A',qty:'3 PC'}, {do:125,sku:'B',qty:'2 IBX'} ] },
+      { id:'HU-2', label:'Store 22 · CG-ST22', dos:[126], items:[ {do:126,sku:'A',qty:'5 PC'}, {do:126,sku:'B',qty:'1 IBX'} ] } ],
+    packNote:'After allocation each delivery’s goods sit in its own lane. Packing still follows the consolidation group: Store 17’s two deliveries share a pallet.',
+    steps:['order','stock','wt','area','wo','pick','stage','alloc','pack'],
+    cap:{
+      order:'<b>1 · Orders arrive.</b> Three deliveries are released together as a <b>wave</b>. All of them need SKU A and SKU B – a good case for batch (multi-order) picking.',
+      stock:'<b>2 · Stock removal (step 1 – withdrawal).</b> Instead of one pick per delivery, EWM adds up the quantities of the whole wave and removes the <b>total</b> from the FIFO bin once.',
+      wt:'<b>3 · Withdrawal tasks.</b> Only <b>2 WTs</b> are created for 6 delivery items. Each WT is “for” three deliveries; the split comes later.',
+      pick:'<b>6 · Picking.</b> Each picker makes <b>one stop</b> and takes the whole wave quantity to the collective pick area.',
+      stage:'<b>7 · Collective pick area.</b> The two withdrawal WTs are confirmed. The goods are still “mixed”: 10 PC of A and 6 IBX of B.',
+      alloc:'<b>8 · Allocation (step 2).</b> Short allocation WTs distribute the goods to the individual deliveries, inside the staging area – no walking in the aisles.',
+      pack:'<b>9 · Packing.</b> The consolidation group still decides the pallets: PM#124 + PM#125 (Store 17) on HU-1, PM#126 (Store 22) on HU-2.',
+    }
+  },
+  s4: {
+    tab:'4 · Batch-managed stock (FEFO)', idea:'Stock is managed by batch with expiry dates. The customer demands minimum remaining shelf life, so one batch is excluded and the order is split over two batches.',
+    feature:'Batch determination · FEFO / shelf-life sort · one item → several WTs',
+    dos:[ { key:124, id:'PM#124', shipTo:'Store 17', cg:'CG-ST17', items:[ {sku:'A',qty:'50 PC',conv:''}, {sku:'B',qty:'30 PC',conv:'= 3 IBX'} ] } ],
+    stock:{
+      A:{ need:'50 PC · min. 30 days remaining shelf life', rule:'<b>Batch determination</b>: AK12A expires in 11 days and is excluded. <b>FEFO</b> (earliest expiry first) takes all of AK19C, the remaining 20 PC come from AK21D → <b>2 WTs, 2 batches</b>.',
+          c:[ {bin:'01-R1', batch:'AK12A', qty:'25 PC', d:'20 Oct (11 d)', skip:' < 30 days'}, {bin:'01-R2', batch:'AK19C', qty:'30 PC', d:'15 Dec (67 d)', pick:1}, {bin:'02-R3', batch:'AK21D', qty:'120 PC', d:'20 Jan (103 d)', pick:1} ] },
+      B:{ need:'30 PC = 3 IBX', rule:'<b>FEFO</b>: KL09A expires first and has enough stock.',
+          c:[ {bin:'03-L3', batch:'KL09A', qty:'12 IBX', d:'28 Feb (142 d)', pick:1}, {bin:'04-L6', batch:'KL11B', qty:'20 IBX', d:'30 Apr (203 d)'} ] },
+    }, dateCol:'Expiry (days left)',
+    wts:[
+      { id:1, sku:'A', qty:'30 PC', bin:'01-R2', batch:'AK19C', area:'P', wo:1, dos:[124] },
+      { id:2, sku:'A', qty:'20 PC', bin:'02-R3', batch:'AK21D', area:'P', wo:1, dos:[124] },
+      { id:3, sku:'B', qty:'3 IBX', bin:'03-L3', batch:'KL09A', area:'R', wo:2, dos:[124] } ],
+    wos:{ 1:{ area:'PCK-P', picker:'Picker 1', seq:[1,2] }, 2:{ area:'PCK-R', picker:'Picker 2', seq:[3] } },
+    cfg:cfgStd, lanes:twoLanes,
+    stageLane: w => 'wo' + w.wo, packLane: it => 'wo' + wtById(it.wt).wo,
+    hus:[ { id:'HU-1', label:'Store 17 · CG-ST17', dos:[124], items:[ {do:124,sku:'A',qty:'30 PC',wt:1}, {do:124,sku:'A',qty:'20 PC',wt:2}, {do:124,sku:'B',qty:'3 IBX',wt:3} ] } ],
+    packNote:'Both A batches go on the same pallet. The HU keeps the batch information (AK19C and AK21D) for traceability.',
+    steps:['order','stock','wt','area','wo','pick','stage','pack'],
+    cap:{
+      stock:'<b>2 · Stock removal with batches.</b> The delivery names no batch, so EWM determines it. Red = batch excluded (shelf life too short), green = selected. The quantity is split because AK19C has only 30 PC.',
+      wt:'<b>3 · Warehouse tasks.</b> SKU A becomes <b>two WTs</b> – one per batch – so the HU and later the customer can trace each batch.',
+    }
+  },
+  s5: {
+    tab:'5 · Pick-pack-pass (zone picking)', idea:'Pickers work one after the other, each only in their own zone. One pick HU travels through the zones and collects every item of the delivery.',
+    feature:'WOCR category pick-pack-pass · pass point · pick HU = shipping HU',
+    dos:[stdDO], stock:stdStock, dateCol:'GR date', wts:stdWTs,
+    wos:{ 1:{ area:'PCK-P', picker:'Picker 1', seq:[1,4], end:[ {x:262,y:340}, pickPt ] },
+          2:{ area:'PCK-R', picker:'Picker 2', seq:[3,2,5], start:[ pickPt, {x:466,y:340} ] } },
+    cfg:[ '<b>PCK-P</b> → WOCR <b>Z-PPP-P</b>: category <i>pick-pack-pass</i> · pick HU created here · next stop = pass point',
+          '<b>PCK-R</b> → WOCR <b>Z-PPP-R</b>: category <i>pick-pack-pass</i> · same pick HU continues here · final stop = staging' ],
+    lanes:[ { id:'hu', label:'pick HU = shipping HU', x:48, w:636 } ],
+    sequential:true, passHU:true,
+    stageLane: () => 'hu', packLane: () => 'hu',
+    hus:[ { id:'HU-1', label:'Store 17 · CG-124', dos:[124], items:[
+      {do:124,sku:'A',qty:'2 PC'}, {do:124,sku:'B',qty:'3 IBX'}, {do:124,sku:'C',qty:'2 CAR'}, {do:124,sku:'C',qty:'10 PC'}, {do:124,sku:'D',qty:'1 IBX'} ] } ],
+    packNote:'The goods are already in the pick HU, so the pack station only checks, closes, labels and weighs it. This saves a repacking step.',
+    steps:['order','stock','wt','area','wo','pick','stage','pack'],
+    cap:{
+      area:'<b>4 · Activity area → WOCR.</b> Same areas as before, but the WOCRs use the category <b>pick-pack-pass</b>: the warehouse orders are linked and share one pick HU.',
+      wo:'<b>5 · WOCR creates linked warehouse orders.</b> WO1 (zone P) ends at the <b>pass point</b> between the zones, WO2 (zone R) starts there. Dashed lines preview the routes.',
+      pick:'<b>6 · Picking (one after the other).</b> Picker 1 fills the pick HU in zone P and leaves it at the pass point. Picker 2 takes the <b>same HU</b> into zone R and completes it. Nobody walks the whole warehouse.',
+      stage:'<b>7 · Staging.</b> The delivery arrives as <b>one complete pick HU</b> in staging – items from both zones are already together.',
+      pack:'<b>8 · Packing.</b> The pick HU is the shipping HU. At the pack station it is only checked, closed and labelled.',
+    }
+  },
+};
+
+/* ======================= helpers ======================= */
+const $ = s => document.querySelector(s);
+const NS = 'http://www.w3.org/2000/svg';
+let sc, speed = 1, token = 0;
+const sleep = ms => new Promise(r => { const my = token; setTimeout(() => { if (my === token) r(); }, ms / speed); });
+function el(tag, attrs = {}, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+const wtById = id => sc.wts.find(w => w.id === id);
+const doByKey = k => sc.dos.find(d => d.key === k);
+const dotag = k => `<span class="dotag" style="--c:var(--d${k})">${doByKey(k).id}</span>`;
+const woColor = wo => `var(--wo${wo})`;
+const woKeys = () => Object.keys(sc.wos).map(Number);
+
+/* ======================= floor plan ======================= */
+const map = $('#map');
+const RACK_X = { 1:{L:48,R:136}, 2:{L:196,R:284}, 3:{L:400,R:488}, 4:{L:548,R:636} };
+const AISLE_CX = { 1:114, 2:262, 3:466, 4:614 };
+const RY0 = 64, RH = 40, ROWS = 6, TOPY = 47, BOTY = 382;
+const cy = row => RY0 + (row - 1) * RH + RH / 2;
+const parseBin = b => ({ aisle:+b.slice(0, 2), side:b[3], row:+b[4] });
+const binXY = b => { const p = parseBin(b); return { x:RACK_X[p.aisle][p.side], y:RY0 + (p.row - 1) * RH }; };
+const pickPoint = b => { const p = parseBin(b); return { x:AISLE_CX[p.aisle], y:cy(p.row) }; };
+
+const gStatic = el('g', {}, map), gDyn = el('g', {}, map);
+const binEls = {};
+(function buildMap() {
+  el('rect', { class:'floor', x:0, y:0, width:730, height:556, rx:10 }, gStatic);
+  el('rect', { class:'zone p off', id:'zoneP', x:36, y:6, width:306, height:370, rx:8 }, gStatic);
+  el('rect', { class:'zone r off', id:'zoneR', x:388, y:6, width:306, height:370, rx:8 }, gStatic);
+  el('rect', { class:'aisle', x:36, y:34, width:658, height:26, rx:4 }, gStatic);
+  el('rect', { class:'aisle', x:36, y:304, width:658, height:72, rx:4 }, gStatic);
+  const zt1 = el('text', { class:'t zt fade', id:'zt1', x:189, y:24, 'text-anchor':'middle' }, gStatic); zt1.textContent = 'PCK-P · piece picking';
+  const zt2 = el('text', { class:'t zt fade', id:'zt2', x:541, y:24, 'text-anchor':'middle' }, gStatic); zt2.textContent = 'PCK-R · rack picking';
+  [1, 2, 3, 4].forEach(a => {
+    const cx = AISLE_CX[a];
+    el('rect', { class:'aisle', x:cx - 22, y:60, width:44, height:244 }, gStatic);
+    el('line', { class:'center', x1:cx, y1:60, x2:cx, y2:376 }, gStatic);
+    const t = el('text', { class:'t lg', x:cx, y:322, 'text-anchor':'middle' }, gStatic); t.textContent = 'Aisle 0' + a;
+    ['L', 'R'].forEach(s => {
+      for (let r = 1; r <= ROWS; r++) {
+        const id = '0' + a + '-' + s + r, x = RACK_X[a][s], y = RY0 + (r - 1) * RH;
+        binEls[id] = el('rect', { class:'bin', x:x + 1, y:y + 1, width:42, height:RH - 2, rx:3 }, gStatic);
+      }
+    });
+  });
+  el('rect', { class:'stage', x:36, y:384, width:658, height:70, rx:8 }, gStatic);
+  const st = el('text', { class:'t lg', x:48, y:398 }, gStatic); st.textContent = 'Goods issue staging';
+  el('rect', { class:'pack', x:36, y:462, width:658, height:86, rx:8 }, gStatic);
+  const pk = el('text', { class:'t lg', x:48, y:476 }, gStatic); pk.textContent = 'Pack station';
+})();
+
+function buildScenarioMap() {
+  sc.lanes.forEach(l => {
+    el('rect', { class:'lane', x:l.x, y:416, width:l.w, height:32, rx:4 }, gDyn);
+    const t = el('text', { class:'t', x:l.x + 2, y:412 }, gDyn); t.textContent = l.label;
+  });
+  if (sc.passHU) {
+    el('rect', { class:'pass', x:pickPt.x - 16, y:pickPt.y - 14, width:32, height:28, rx:5 }, gDyn);
+    const t = el('text', { class:'t lg', x:pickPt.x, y:pickPt.y - 20, 'text-anchor':'middle' }, gDyn); t.textContent = 'pass point';
+  }
+}
+const laneById = id => sc.lanes.find(l => l.id === id);
+
+/* ======================= map actions ======================= */
+const badges = {}, pass = { g:null, n:0 };
+function showCandidates(sku) {
+  sc.stock[sku].c.forEach(c => {
+    binEls[c.bin].classList.add(c.skip ? 'skip' : 'cand');
+    const p = binXY(c.bin);
+    const g = el('g', { class:'cbadge fade' + (c.skip ? ' skip' : ''), transform:`translate(${p.x + 9},${p.y + 9})` }, gDyn);
+    el('circle', { r:7 }, g); el('text', { y:3 }, g).textContent = sku;
+    const lbl = el('text', { class:'t fade', x:p.x + 22, y:p.y + RH - 5, 'text-anchor':'middle' }, gDyn); lbl.textContent = c.bin;
+    requestAnimationFrame(() => { g.classList.add('in'); lbl.classList.add('in'); });
+  });
+}
+function chooseBins(sku) { sc.stock[sku].c.filter(c => c.pick).forEach(c => { binEls[c.bin].classList.remove('cand'); binEls[c.bin].classList.add('chosen'); }); }
+function addBadge(w) {
+  const p = binXY(w.bin), sib = sc.wts.filter(x => x.bin === w.bin), i = sib.indexOf(w);
+  const dy = (i - (sib.length - 1) / 2) * 15;
+  const g = el('g', { class:'badge fade', transform:`translate(${p.x + 22},${p.y + 20 + dy})` }, gDyn);
+  el('rect', { x:-17, y:-8, width:34, height:16, rx:4 }, g);
+  const t = el('text', { y:3 }, g); t.textContent = 'WT' + w.id;
+  badges[w.id] = { g, t }; requestAnimationFrame(() => g.classList.add('in'));
+}
+function routePoints(wo) {
+  const spec = sc.wos[wo], seq = spec.seq.map(wtById);
+  let aisle = parseBin(seq[0].bin).aisle;
+  const pts = spec.start ? spec.start.map(p => ({ ...p })) : [{ x:AISLE_CX[aisle], y:BOTY }];
+  seq.forEach((w, i) => {
+    const pp = pickPoint(w.bin), a = parseBin(w.bin).aisle;
+    if (a !== aisle) { pts.push({ x:AISLE_CX[aisle], y:TOPY }, { x:AISLE_CX[a], y:TOPY }); aisle = a; }
+    pts.push({ x:pp.x, y:pp.y, pick:w.id, n:i + 1 });
+  });
+  if (spec.end) spec.end.forEach(p => pts.push({ ...p })); else pts.push({ x:AISLE_CX[aisle], y:BOTY });
+  return pts;
+}
+function drawRoute(wo) {
+  const pts = routePoints(wo);
+  const r = el('path', { class:'route fade', d:pts.map((p, i) => (i ? 'L' : 'M') + p.x + ',' + p.y).join(' '), stroke:woColor(wo) }, gDyn);
+  requestAnimationFrame(() => r.classList.add('in'));
+  const seen = {};
+  pts.filter(p => p.pick).forEach(p => {
+    const k = p.x + ',' + p.y, off = (seen[k] = (seen[k] || 0) + 1) - 1;
+    const g = el('g', { class:'seq fade', transform:`translate(${p.x + off * 20},${p.y})` }, gDyn);
+    el('circle', { r:9, fill:woColor(wo) }, g); el('text', { y:3.5 }, g).textContent = p.n;
+    requestAnimationFrame(() => g.classList.add('in'));
+  });
+  return pts;
+}
+function makePicker(wo, pt) {
+  const g = el('g', { class:'picker fade', transform:`translate(${pt.x},${pt.y})` }, gDyn);
+  el('circle', { r:12, fill:woColor(wo) }, g); el('text', { y:3.5 }, g).textContent = 'P' + wo;
+  const c = el('text', { class:'cnt', x:16, y:4 }, g); c.textContent = '0/' + sc.wos[wo].seq.length;
+  requestAnimationFrame(() => g.classList.add('in'));
+  return { g, c };
+}
+function tween(g, a, b, trail, trailPts) {
+  return new Promise(res => {
+    const d = Math.hypot(b.x - a.x, b.y - a.y), dur = Math.max(1, d / 150 * 1000 / speed), t0 = performance.now(), my = token;
+    (function f(t) {
+      if (my !== token) return res(false);
+      const k = Math.min(1, (t - t0) / dur), x = a.x + (b.x - a.x) * k, y = a.y + (b.y - a.y) * k;
+      g.setAttribute('transform', `translate(${x},${y})`);
+      trail.setAttribute('points', trailPts.concat([{ x, y }]).map(p => p.x + ',' + p.y).join(' '));
+      k < 1 ? requestAnimationFrame(f) : res(true);
+    })(t0);
+  });
+}
+function toteOn(g) {
+  if (!pass.g) {
+    pass.g = el('g', { class:'tote' });
+    el('rect', { width:26, height:14, rx:3 }, pass.g); el('text', { x:13, y:10 }, pass.g);
+  }
+  g.appendChild(pass.g); pass.g.setAttribute('transform', 'translate(10,-26)'); toteText();
+}
+function toteText() { pass.g.querySelector('text').textContent = pass.n + '/' + sc.wts.length; }
+function toteDrop(pt) { gDyn.appendChild(pass.g); pass.g.setAttribute('transform', `translate(${pt.x - 13},${pt.y - 7})`); }
+async function walk(wo, pts) {
+  const info = sc.wos[wo], my = token, picker = makePicker(wo, pts[0]), total = info.seq.length;
+  const trail = el('polyline', { class:'trail', stroke:woColor(wo), opacity:.9 }, gDyn);
+  const done = [pts[0]]; let n = 0;
+  if (sc.passHU) toteOn(picker.g);
+  for (let i = 1; i < pts.length; i++) {
+    if (!(await tween(picker.g, pts[i - 1], pts[i], trail, done))) return;
+    done.push(pts[i]);
+    if (pts[i].pick) {
+      await sleep(350); if (my !== token) return;
+      const w = wtById(pts[i].pick); n++; pass.n++;
+      picker.c.textContent = n + '/' + total; if (pass.g) toteText();
+      binEls[w.bin].classList.remove('chosen'); binEls[w.bin].classList.add('done');
+      badges[w.id].g.classList.remove('wo1', 'wo2'); badges[w.id].g.classList.add('done'); badges[w.id].t.textContent = '✓ WT' + w.id;
+      const st = $('#st' + w.id); st.textContent = 'confirmed'; st.classList.add('done');
+      log(`<span class="p${wo}">${info.picker}</span> picks WT${w.id}: ${w.qty} of SKU ${w.sku}, batch ${w.batch}, bin ${w.bin}`);
+      await sleep(450);
+    }
+  }
+  if (sc.passHU && wo !== Math.max(...woKeys())) { toteDrop(pts[pts.length - 1]); log(`<span class="p${wo}">${info.picker}</span> leaves the pick HU at the pass point`); }
+  else log(`<span class="p${wo}">${info.picker}</span> arrives at staging with WO${wo}`);
+}
+function log(html) { const li = document.createElement('li'); li.innerHTML = html; $('#log').appendChild(li); $('#log').scrollTop = 1e6; }
+
+function stageChip(laneId, idx, n, text, fill, doKey) {
+  const l = laneById(laneId), w = Math.min(92, (l.w - 8) / n - 4), x = l.x + 4 + idx * (w + 4);
+  const g = el('g', { class:'chipS fade', transform:`translate(${x},420)` }, gDyn);
+  el('rect', { class:'bg', width:w, height:24, rx:4, fill }, g);
+  if (doKey) el('rect', { width:4, height:24, rx:2, style:`fill:var(--d${doKey})` }, g);
+  el('text', { x:w / 2 + 2, y:15 }, g).textContent = text(w);
+  setTimeout(() => g.classList.add('in'), 250 * idx / speed);
+  return g;
+}
+function fly(fx, fy, tx, ty, w, h, fill, text, delay) {
+  const g = el('g', { class:'fly' }, gDyn);
+  g.style.transform = `translate(${fx}px,${fy}px)`; g.style.opacity = 0;
+  el('rect', { width:w, height:h, rx:4, style:`fill:${fill}` }, g);
+  el('text', { class:'ft', x:w / 2, y:h / 2 + 3, 'text-anchor':'middle' }, g).textContent = text;
+  g.getBoundingClientRect();
+  setTimeout(() => { g.style.opacity = 1; g.style.transform = `translate(${tx}px,${ty}px)`; }, delay / speed);
+  return g;
+}
+const laneCenter = id => { const l = laneById(id); return l.x + l.w / 2 - 23; };
+
+/* ======================= sections ======================= */
+const SEC = {
+  order: n => `<h3><span>${n}</span>${sc.dos.length > 1 ? 'Outbound Deliveries arrive from ERP' : 'Outbound Delivery arrives from ERP'}</h3>
+    <div class="meta">Each delivery item carries a <b>consolidation group</b> (CG) – the rule for what may be packed together. <i>(example data)</i></div>
+    <table><thead><tr><th>Delivery</th><th>Ship-to</th><th>CG</th><th>SKU</th><th>Qty (base UoM)</th></tr></thead><tbody>` +
+    sc.dos.map(d => d.items.map((it, i) => `<tr class="hid" id="dor-${d.key}-${i}"><td>${i ? '' : dotag(d.key)}</td><td>${i ? '' : d.shipTo}</td><td>${i ? '' : d.cg}</td>
+      <td>SKU ${it.sku}</td><td>${it.qty} <span style="color:var(--muted)" class="cv" data-sku="${it.sku}" data-t="${it.conv}"></span></td></tr>`).join('')).join('') + '</tbody></table>',
+  stock: n => `<h3><span>${n}</span>Stock removal – which bin, batch and UoM?</h3>
+    <div class="meta">Alternative UoM maintained per SKU:</div><div class="chips">${UOM.map(u => `<span class="chip">${u}</span>`).join('')}</div>` +
+    Object.keys(sc.stock).map(k => { const s = sc.stock[k];
+      return `<div class="sku" id="sku${k}"><h4>SKU ${k} – need ${s.need}</h4><table><thead><tr><th>Bin</th><th>Batch</th><th>Stock</th><th>${sc.dateCol}</th></tr></thead><tbody>` +
+        s.c.map(c => `<tr><td>${c.bin}</td><td>${c.batch}</td><td>${c.qty}</td><td data-why="${c.skip || ''}">${c.d}</td></tr>`).join('') +
+        `</tbody></table><div class="rule">${s.rule}</div></div>`; }).join(''),
+  wt: n => `<h3><span>${n}</span>Warehouse Tasks (WT) created</h3>
+    <div class="meta">${sc.key === 's3' ? 'Withdrawal WTs: one per product / batch / bin for the whole wave.' : 'One WT per product / batch / source bin / UoM.'}</div>` +
+    sc.wts.map(w => `<div class="wtrow" id="wt${w.id}"><b>WT${w.id}</b> SKU ${w.sku} · ${w.qty} · batch ${w.batch}${w.dos.length > 1 || sc.dos.length > 1 ? ' ' + w.dos.map(dotag).join('') : ''}<small>from bin ${w.bin}</small></div>`).join(''),
+  area: n => `<h3><span>${n}</span>Activity area decides which WOCR applies</h3>
+    <div class="meta">The activity area comes from the WT's <b>source bin</b>; each area has its own WOCR search sequence.</div>
+    <table><thead><tr><th>WT</th><th>Source bin</th><th>Activity area</th></tr></thead><tbody>` +
+    sc.wts.map(w => `<tr class="hid" id="aa${w.id}"><td>WT${w.id}</td><td>${w.bin}</td><td><span class="tag ${w.area.toLowerCase()}">PCK-${w.area}</span></td></tr>`).join('') +
+    `</tbody></table><div class="cfg" id="cfg">${sc.cfg.map(c => `<div>${c}</div>`).join('')}<div style="color:var(--muted)">Illustrative configuration – check your own WOCR search sequences.</div></div>`,
+  wo: n => `<h3><span>${n}</span>Warehouse Orders (WO) = picking lists</h3>
+    <div class="meta">${sc.sequential ? 'The WOs are linked: the pick HU passes from one to the next.' : 'WO sorting puts the WTs in walking order – so the sequence is not the WT number.'}</div>` +
+    woKeys().map(wo => `<div class="wo w${wo}" id="wo${wo}"><h4>WO${wo} <span class="tag ${wo === 1 ? 'p' : 'r'}">${sc.wos[wo].area}</span><span class="tag">${sc.wos[wo].picker}</span></h4><ol>` +
+      sc.wos[wo].seq.map(id => { const w = wtById(id); return `<li><b>WT${id}</b> – SKU ${w.sku} ${w.qty} @ ${w.bin}</li>`; }).join('') + '</ol></div>').join(''),
+  pick: n => `<h3><span>${n}</span>Picking executed in the aisles</h3>` +
+    sc.wts.map(w => `<div class="worow" id="wr${w.id}"><b>WT${w.id}</b> SKU ${w.sku} · ${w.qty}<span class="status" id="st${w.id}">open</span></div>`).join('') + '<ul class="log" id="log"></ul>',
+  stage: n => `<h3><span>${n}</span>${sc.key === 's3' ? 'Collective pick area' : 'Confirmed → goods issue staging'}</h3>
+    <div>${sc.key === 's3' ? 'Both withdrawal WTs are confirmed. The wave quantity (10 PC of A, 6 IBX of B) is waiting to be split per delivery.'
+         : sc.key === 's5' ? 'The pick HU arrives complete in staging – both zones have contributed to it.'
+         : 'All WOs are confirmed. The goods stand in staging lanes, still sorted by warehouse order.'}</div>`,
+  alloc: n => `<h3><span>${n}</span>Allocation (two-step picking, step 2)</h3>
+    <div class="meta">Short allocation WTs split the collective quantity to the deliveries – no walking in the aisles.</div>
+    <table><thead><tr><th>Delivery</th><th>SKU A</th><th>SKU B</th></tr></thead><tbody>` +
+    sc.dos.map(d => `<tr class="hid hurow" id="al${d.key}"><td>${dotag(d.key)}</td><td>${sc.alloc.find(a => a.do === d.key && a.sku === 'A').qty}</td><td>${sc.alloc.find(a => a.do === d.key && a.sku === 'B').qty}</td></tr>`).join('') +
+    `</tbody></table><div class="cmp"><div><b>6</b>aisle stops with single-order picking</div><div><b>2</b>aisle stops with two-step picking</div></div>`,
+  pack: n => `<h3><span>${n}</span>Packing – shipping handling units</h3>
+    <div class="meta">${sc.packNote}</div>
+    <table><thead><tr><th>Shipping HU</th><th>Ship-to · group</th><th>Contents</th></tr></thead><tbody>` +
+    sc.hus.map((h, i) => `<tr class="hid hurow" id="hur${i}"><td><b>${h.id}</b> pallet${h.dos.length > 1 ? '<br><span class="tag" style="border-color:var(--ok);color:var(--ok)">' + h.dos.length + ' deliveries combined</span>' : ''}</td><td>${h.label}</td><td>` +
+      h.dos.map(k => dotag(k) + h.items.filter(it => it.do === k).map(it => `${it.sku} ${it.qty}`).join(', ')).join('<br>') + '</td></tr>').join('') +
+    `</tbody></table><div class="callout">Consolidation group rule: items with the <b>same CG</b> may go into one HU, items with different CGs may not. The rule is configurable – ship-to is only one example criterion (the default is one CG per delivery).</div>
+    <div class="sum" id="packSum" style="display:none"></div>`,
+};
+
+/* ======================= step logic ======================= */
+const show = key => { const s = $('#sec-' + key); s.classList.add('show'); s.scrollIntoView({ behavior:'smooth', block:'nearest' }); };
+let routes = {};
+const RUN = {
+  async order() {
+    const n = sc.dos.reduce((a, d) => a + d.items.length, 0);
+    $('#bannerTxt').innerHTML = sc.dos.length > 1 ? `<b>${sc.dos.length} outbound deliveries</b> received from ERP – ${n} items` : `<b>New outbound delivery ${sc.dos[0].id}</b> received from ERP – ${n} items`;
+    $('#banner').classList.add('show'); show('order');
+    for (const d of sc.dos) for (let i = 0; i < d.items.length; i++) { $(`#dor-${d.key}-${i}`).classList.remove('hid'); await sleep(300); }
+  },
+  async stock() {
+    show('stock');
+    for (const k of Object.keys(sc.stock)) {
+      const blk = $('#sku' + k); blk.classList.add('show'); showCandidates(k); await sleep(900);
+      blk.querySelectorAll('tbody tr').forEach((tr, i) => { const c = sc.stock[k].c[i]; if (c.pick) tr.classList.add('pick'); if (c.skip) tr.classList.add('skip'); });
+      chooseBins(k); blk.querySelector('.rule').classList.add('show');
+      document.querySelectorAll(`.cv[data-sku="${k}"]`).forEach(c => c.textContent = c.dataset.t);
+      await sleep(1300);
+    }
+  },
+  async wt() { show('wt'); for (const w of sc.wts) { $('#wt' + w.id).classList.add('show'); addBadge(w); await sleep(450); } },
+  async area() {
+    show('area');
+    ['zoneP', 'zoneR'].forEach(z => { $('#' + z).classList.remove('off'); $('#' + z).classList.add('pulse'); });
+    $('#zt1').classList.add('in'); $('#zt2').classList.add('in');
+    for (const w of sc.wts) { $('#aa' + w.id).classList.remove('hid'); badges[w.id].g.classList.add('a-' + w.area.toLowerCase()); await sleep(380); }
+    $('#cfg').style.display = 'block'; await sleep(900);
+  },
+  async wo() {
+    show('wo');
+    for (const wo of woKeys()) {
+      $('#wo' + wo).classList.add('show');
+      sc.wos[wo].seq.forEach(id => { badges[id].g.classList.remove('a-p', 'a-r'); badges[id].g.classList.add('wo' + wo); });
+      routes[wo] = drawRoute(wo); await sleep(1100);
+    }
+  },
+  async pick() {
+    show('pick'); document.querySelectorAll('.worow').forEach(r => r.classList.add('show'));
+    log(sc.sequential ? 'WO1 and WO2 are linked (pick-pack-pass) – WO1 released first' : woKeys().map(w => 'WO' + w).join(' and ') + ' released to the RF queue');
+    if (sc.sequential) { for (const wo of woKeys()) await walk(wo, routes[wo]); }
+    else await Promise.all(woKeys().map(wo => walk(wo, routes[wo])));
+  },
+  async stage() {
+    show('stage');
+    const lanes = {};
+    const order = woKeys().flatMap(wo => sc.wos[wo].seq);
+    order.forEach(id => { const l = sc.stageLane(wtById(id)); (lanes[l] = lanes[l] || []).push(id); });
+    Object.keys(lanes).forEach(l => lanes[l].forEach((id, i) => {
+      const w = wtById(id);
+      stageChip(l, i, lanes[l].length, ww => ww >= 88 ? `WT${w.id} · ${w.sku} · ${w.qty}` : `WT${w.id} ${w.sku} ${w.qty}`, woColor(w.wo), w.dos.length === 1 ? w.dos[0] : null);
+    }));
+    await sleep(1400);
+  },
+  async alloc() {
+    show('alloc');
+    const per = {}; sc.alloc.forEach(a => (per['do' + a.do] = per['do' + a.do] || []).push(a));
+    document.querySelectorAll('.chipS').forEach(c => c.style.opacity = .35);
+    let k = 0;
+    for (const d of sc.dos) {
+      per['do' + d.key].forEach((a, i) => {
+        const l = laneById('do' + d.key), w = 62;
+        fly(laneCenter('collect'), 420, l.x + 4 + i * (w + 4), 420, w, 24, `var(--d${d.key})`, `${a.sku} ${a.qty}`, k++ * 220);
+      });
+      $('#al' + d.key).classList.add('show'); await sleep(900);
+    }
+  },
+  async pack() {
+    show('pack');
+    document.querySelectorAll('.chipS').forEach(c => c.style.opacity = .35);
+    for (let i = 0; i < sc.hus.length; i++) {
+      const h = sc.hus[i], x0 = 48 + i * 222;
+      el('rect', { class:'pallet', x:x0, y:536, width:196, height:8, rx:2 }, gDyn);
+      const lbl = el('text', { class:'t lg fade', x:x0, y:487 }, gDyn); lbl.textContent = `${h.id} · ${h.label}`;
+      requestAnimationFrame(() => lbl.classList.add('in'));
+      h.items.forEach((it, k) => {
+        const lane = sc.packLane(it), tx = x0 + 2 + (k % 4) * 48, ty = 515 - Math.floor(k / 4) * 22;
+        fly(laneCenter(lane), 420, tx, ty, 46, 20, `var(--d${it.do})`, `${it.sku} ${it.qty}`, k * 420);
+      });
+      $('#hur' + i).classList.add('show');
+      await sleep(420 * h.items.length + 900);
+    }
+    const sum = $('#packSum'); sum.style.display = 'flex';
+    sum.innerHTML = `<span class="chip">${sc.hus.length} shipping HU</span>` + sc.hus.map(h => `<span class="chip">${h.id}: ${h.dos.length} ${h.dos.length > 1 ? 'deliveries' : 'delivery'}</span>`).join('') + '<span class="chip">ready for loading</span>';
+    $('#bannerTxt').innerHTML = `<b>Packing completed</b> – ${sc.hus.length} shipping HU${sc.hus.length > 1 ? 's' : ''} ready for loading and goods issue`;
+    await sleep(900);
+  },
+};
+const CAP = {
+  order:'<b>1 · Order arrives.</b> ERP sends outbound delivery PM#124 to EWM. Quantities are in the base UoM (PC). Each item also gets a consolidation group that later decides what may be packed together.',
+  stock:'<b>2 · Stock removal.</b> For every item EWM searches the storage types and sorts the quants (FIFO, partial quantities…). The result fixes the <b>bin, batch and UoM</b>. Dashed bins = candidates, green = selected.',
+  wt:'<b>3 · Warehouse tasks.</b> Each pick becomes one WT with product, quantity <i>in the picked UoM</i>, batch and source bin. SKU C (50 PC) splits into two tasks (2 CAR and 10 PC).',
+  area:'<b>4 · Activity area → WOCR.</b> The source bin tells EWM the activity area (aisles 01–02 = PCK-P, aisles 03–04 = PCK-R). The area selects the WOCR search sequence – this is why the tasks are about to be split.',
+  wo:'<b>5 · WOCR creates warehouse orders.</b> Inside each area the rule applies filters and limits, then <b>WO sorting</b> by pick path puts the WTs in walking order. Dashed lines preview each picker’s route; numbers show the pick sequence.',
+  pick:'<b>6 · Picking.</b> The WOs are released to pickers who work in parallel. Each walks the aisles (gangways) from staging, confirms every WT at the bin and returns with the goods.',
+  stage:'<b>7 · Confirmed.</b> All WTs are confirmed, the WOs are closed and the goods stand in the goods issue staging lanes.',
+  alloc:'<b>Allocation.</b>',
+  pack:'<b>Packing.</b> At the pack station EWM packs the goods into shipping HUs. Items with the same consolidation group may share one HU (pallet).',
+};
+const NAMES = { order:'Order', stock:'Stock removal', wt:'Warehouse tasks', area:'Activity area', wo:'Warehouse orders', pick:'Picking', stage:'Staging', alloc:'Allocation', pack:'Packing' };
+
+/* ======================= controller ======================= */
+let step = 0, playing = false, busy = false, current = 's1';
+function capFor(i) {
+  const k = sc.steps[i], raw = sc.cap[k] || CAP[k];
+  return '<b>' + (i + 1) + ' · ' + raw.replace(/^<b>(\d+ · )?/, '');
+}
+function render() {
+  $('#caption').innerHTML = step === 0 ? 'Press <b>Play</b> to follow the delivery from the order to the packed pallet.' : capFor(step - 1);
+  document.querySelectorAll('.st').forEach((d, i) => d.classList.toggle('on', i === step - 1));
+  $('#btnNext').disabled = step >= sc.steps.length || busy;
+  $('#btnPlay').textContent = playing ? '❚❚ Pause' : (step >= sc.steps.length ? '▶ Replay' : '▶ Play');
+}
+async function next() {
+  if (busy || step >= sc.steps.length) return;
+  busy = true; const key = sc.steps[step]; step++; render();
+  await RUN[key](); busy = false; render();
+}
+function reset() {
+  token++; playing = false; step = 0; busy = false; routes = {}; pass.g = null; pass.n = 0;
+  gDyn.innerHTML = '';
+  Object.values(binEls).forEach(b => b.setAttribute('class', 'bin'));
+  Object.keys(badges).forEach(k => delete badges[k]);
+  ['zoneP', 'zoneR'].forEach(z => { $('#' + z).classList.add('off'); $('#' + z).classList.remove('pulse'); });
+  $('#zt1').classList.remove('in'); $('#zt2').classList.remove('in');
+  $('#banner').classList.remove('show');
+  $('#datacol').innerHTML = sc.steps.map((k, i) => `<section class="card sec" id="sec-${k}">${SEC[k](i + 1)}</section>`).join('');
+  $('#steps').innerHTML = sc.steps.map((k, i) => `<div class="st">${i + 1} ${NAMES[k]}</div>`).join('');
+  buildScenarioMap(); render();
+}
+function load(key) {
+  current = key; sc = SC[key]; sc.key = key;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.k === key));
+  $('#info').innerHTML = `<div><b>Idea:</b> ${sc.idea}</div><div><b>EWM features:</b> ${sc.feature}</div>`;
+  reset();
+}
+async function play() {
+  if (step >= sc.steps.length) reset();
+  playing = true; render();
+  while (playing && step < sc.steps.length) { await next(); if (playing) await sleep(1200); }
+  playing = false; render();
+}
+Object.keys(SC).forEach(k => {
+  const b = document.createElement('button'); b.className = 'tab'; b.dataset.k = k; b.textContent = SC[k].tab; b.onclick = () => load(k);
+  $('#tabs').appendChild(b);
+});
+$('#btnPlay').onclick = () => { if (playing) { playing = false; render(); } else play(); };
+$('#btnNext').onclick = () => { playing = false; next(); };
+$('#btnReset').onclick = reset;
+$('#speed').onchange = e => { speed = +e.target.value; };
+load('s1');
+</script>
+</body>
+</html>
