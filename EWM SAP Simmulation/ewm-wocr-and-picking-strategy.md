@@ -208,12 +208,58 @@ Example used in the simulation (scenario 2): PM#124 and PM#125 are both for Stor
 | 3 | **Batch picking (two-step)** | Total quantity of a wave is withdrawn once, then split per delivery in staging | Two-step picking: withdrawal WT (default warehouse process type 2020) + allocation WTs, wave |
 | 4 | **Batch-managed stock (FEFO)** | Min. remaining shelf life excludes a batch, one item splits into two WTs (two batches) | Batch determination, shelf-life sort field, FEFO |
 | 5 | **Pick-pack-pass** | Pickers work one after the other in their own zone, the same pick HU passes through the zones | WOCR category pick-pack-pass, pass point, pick HU |
+| 6 | **Layered removal** | Order split by alt UoM; per layer: full-UoM bins only → expiry → storage type priority → GR date | Quantity classification, search sequence per layer, storage type group, removal rule sort fields |
+| 7 | **Wave, layered removal** | 4 deliveries, 3 SKUs run the layered logic in sequence on the remaining stock; full-pallet HU WTs go to a forklift WO and straight to the door | Same as 6 + WOCR for HU WTs, consolidation groups |
 
 Notes:
 - "Batch picking" is used in two senses. Scenario 3 is the multi-order sense (picking several orders at once). Scenario 4 is the batch/lot-managed stock sense.
 - Two-step picking is relevant when many deliveries need the same products. It reduces trips to the racks, but adds an allocation step. EWM decides per product whether it is two-step relevant, and the wave can override it.
 - Cluster picking (several orders on one cart at once) is **not** shown, because the sources I found did not describe it as a named EWM feature.
 - Other candidates not yet simulated: full-pallet picking from reserve, replenishment of a fixed pick bin, and wave-based release.
+
+---
+
+## 9. Warehouse structure (storage type, section, bin)
+
+| Level | SAP EWM definition | Example in the simulation |
+|---|---|---|
+| **Warehouse number** | Highest organizational unit in warehouse management, usually one building or DC (4 characters) | WH01 |
+| **Storage type** | Physical or logical subdivision of a warehouse complex (4 characters). Its role and settings control putaway, stock removal and stock movements | 0010 Shelving (aisles 01–03), 0020 Carton rack (04–05), 0030 Pallet rack (06–08), 0040 Bulk storage (09), 9010 GI staging, 9020 GR zone, 9030 Pack station |
+| **Storage section** | Organizational subdivision of a storage type. Groups bins with similar attributes (fast movers, heavy goods…), used by putaway | 0001 fast movers (half nearer the docks), 0002 slow movers |
+| **Storage bin** | Smallest addressable unit of space, the exact position of a product. Coordinates up to 18 characters, e.g. aisle–stack–level | 04-R5 = aisle 04, side R, bay 5 |
+| **Bin type** | Bin attribute for relative size or actual dimensions | S1 shelf, C1 carton, P1 pallet slot, B1 block lane |
+| **Quant** | Quantity of one product in one bin, resource or TU | Each stock row |
+| **Activity area** | Logical group of bins, can span storage types; drives e.g. WOCR | PCK-P, PCK-R |
+
+Typical storage type rules: storage type role; putaway with storage section check and bin type check; capacity / mixed storage; stock removal via search sequence and removal rule (a rule set directly on the storage type overrides the search sequence's rule); storage type groups for one sort across several types; full stock removal (HU WT) in pallet storage **(verify)**.
+
+## 10. Layered stock removal (scenario 6)
+
+Required logic:
+
+1. Split the order quantity by **alternative UoM**, largest first (PAL → CAR → IBX → PC). A 1-PAL request only looks at bins with a **full pallet**; the same for CAR and IBX.
+2. Within each layer, **earliest expiry** first.
+3. Same expiry → **storage type priority**.
+4. Same storage type priority → **first goods receipt**.
+
+This is a **stock removal** topic, not WOCR: it decides which quant becomes the WT. WOCR only groups the WTs afterwards.
+
+How it maps to EWM **(verify in your system)**:
+
+| Step | EWM building block |
+|---|---|
+| 1 | Quantity classification from the alternative UoM / packaging specification → one storage type search sequence per classification |
+| 2 | Stock removal rule, sort field shelf-life expiration date (`VFDAT`) ascending |
+| 3 | The storage types of a layer must be in a **storage type group**. Without a group, EWM searches storage type by storage type and stops when enough stock is found – storage type would then win over expiry. With a group, all quants are pooled first, then sorted. Second sort field: storage type (works when the numbering follows the priority), otherwise a BAdI |
+| 4 | Third sort field GR date (`WDATU`) ascending |
+
+Example (SKU E: 1 PAL = 10 CAR = 500 PC, 1 CAR = 5 IBX = 50 PC, 1 IBX = 10 PC), order 620 PC = 1 PAL + 2 CAR + 2 IBX:
+
+| Layer | Search sequence | Decided at | Result |
+|---|---|---|---|
+| PAL | 0030 → 0040 | ③ storage type | HU P-1002 (06-L9, 30 Nov) beats P-1005 in bulk (same expiry, prio 2). Opened pallet P-1003 is not a full PAL |
+| CAR | 0020 → 0030 | ④ GR date | 04-R4 (12 Aug). 07-L6 is older but in storage type prio 2 |
+| IBX | 0010 → 0020 | ③ storage type | 02-R3. 05-R6 has the same expiry and older GR but prio 2; loose PC in 01-R4 is never considered |
 
 ---
 
@@ -230,4 +276,6 @@ Notes:
 - [SAP Learning – Setting Up the Pick, Pack, and Pass Process](https://learning.sap.com/courses/resource-management-in-sap-ewm/setting-up-the-pick-pack-and-pass-process)
 - [SAP Community – Deep dive into SAP EWM consolidation groups during packing](https://blogs.sap.com/t5/supply-chain-management-blogs-by-members/deep-dive-into-sap-ewm-consolidation-groups-during-packing/bc-p/13573768)
 - [SAP Knowledge Base Article 3058611](https://userapps.support.sap.com/sap/support/knowledge/en/3058611)
+- [SAP Learning – Outlining Warehouse Structures](https://learning.sap.com/courses/processes-in-sap-s-4hana-ewm/outlining-warehouse-structures)
+- [SAP Community – EWM stock removal strategies (VFDAT sort)](https://community.sap.com/t5/supply-chain-management-q-a/ewm-stock-removal-strategies/qaq-p/11464648)
 - [ArchLynk – Warehouse order creation process](https://archlynk.com/blog/warehouse-order-creation-process-and-its-benefits)
