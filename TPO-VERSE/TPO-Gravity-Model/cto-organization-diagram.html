@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CTO Organization Diagram</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --big: #7ba3ec;
+    --big-text: #ffffff;
+    --pod: #dce8fa;
+    --node: #eeeeee;
+    --node-text: #222222;
+    --cto: #1f4aa8;
+    --funnel: #d9e6f7;
+    --line: #555555;
+    --biz: #e2d6f0;
+    --star: #f5b800;
+    --tagline: #2b5fb0;
+    --green: #5b9a47;
+    --hl: #f3b94d;
+    --hl-pod: #ffe8bd;
+    --hl-tpo: #ffd36e;
+  }
+  body { margin: 0; background: var(--bg); font-family: "Segoe UI", Helvetica, Arial, sans-serif; }
+  main { max-width: 1400px; margin: 0 auto; padding: 16px; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 2px solid var(--pod); }
+  .tab { font: inherit; font-size: 15px; padding: 8px 18px; border: 0; background: none; color: #444; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+  .tab[aria-selected="true"] { color: var(--cto); font-weight: 700; border-bottom-color: var(--cto); }
+  .tab:focus-visible { outline: 2px solid var(--cto); outline-offset: 2px; }
+  .panel[hidden] { display: none; }
+  .clickable { cursor: pointer; }
+  .clickable:hover .pod { fill: #c9dcf7; }
+  .pod.hl { fill: var(--hl-pod); stroke: var(--hl); stroke-width: 3; }
+  .clickable:hover .pod.hl { fill: #ffdc9a; }
+  .big.hl { fill: var(--hl); }
+  .mini.tpo { fill: var(--hl-tpo); stroke: #b87400; stroke-width: 1; }
+  .tpo-text { fill: #3a2600; font-size: 6.5px; text-anchor: middle; }
+  .squad-label { fill: #222; font-size: 11px; font-weight: 700; text-anchor: middle; }
+  .f-name { fill: #222; font-size: 20px; }
+  .arrow-line { stroke: #d98200; stroke-width: 4; fill: none; }
+  .arrow-text { fill: #b86a00; font-size: 18px; font-weight: 700; }
+  .ring-dash { fill: none; stroke: #f0a050; stroke-width: 3; stroke-dasharray: 10 8; }
+  .tpo-c { fill: #ccf5d2; stroke: #6dd47e; stroke-width: 3; }
+  .pmo-c { fill: var(--node); stroke: #ccc; stroke-width: 2; }
+  .role-c { fill: var(--node); stroke: #ccc; stroke-width: 2; }
+  .role-c.biz { fill: var(--biz); stroke: #bba8d6; }
+  .d-text { fill: #222; font-size: 23px; text-anchor: middle; }
+  .d-small { fill: #222; font-size: 19px; text-anchor: middle; }
+  .tag { fill: #feebc0; stroke: #f9c840; stroke-width: 3; }
+  .tag.alt { stroke: #3b9bf0; stroke-dasharray: 8 5; }
+  .tag-text { fill: #222; font-size: 24px; text-anchor: middle; }
+  .focus-ring { fill: none; stroke: #b87400; stroke-width: 3; stroke-dasharray: 8 6; }
+  .f-title { fill: #1b2a4a; font-size: 34px; font-weight: 700; }
+  .f-sub { fill: #555; font-size: 18px; }
+  .f-role { fill: #222; font-size: 20px; }
+  .f-role b { font-weight: 700; }
+  svg { width: 100%; height: auto; display: block; }
+  .big { fill: var(--big); }
+  .big-label { fill: var(--big-text); font-weight: 700; font-size: 22px; text-anchor: middle; }
+  .pod { fill: var(--pod); }
+  .pod-label { fill: #222; font-size: 11px; text-anchor: middle; }
+  .node { fill: var(--node); }
+  .node-text { fill: var(--node-text); font-size: 16px; text-anchor: middle; }
+  .mini { fill: var(--node); stroke: #fff; stroke-width: 1; }
+  .mini.biz { fill: var(--biz); }
+  .mini-text { fill: #222; font-size: 6.5px; text-anchor: middle; }
+  .link { stroke: var(--line); stroke-width: 2; fill: none; }
+  .funnel { fill: var(--funnel); }
+  .cto { fill: var(--cto); }
+  .cto-text { fill: #fff; font-weight: 700; font-size: 30px; text-anchor: middle; }
+  .academy-text { fill: #fff; font-weight: 700; font-size: 25px; text-anchor: middle; }
+  .univ { fill: var(--green); }
+  .univ-text { fill: #fff; font-weight: 700; font-size: 25px; text-anchor: middle; }
+  .star { fill: var(--star); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Standard ecosystem squad: 6 roles around a pod centre (0,0), radius 95 -->
+    <g id="squad">
+      <circle class="mini" cx="-58" cy="-17" r="22"/>
+      <text class="mini-text" x="-58" y="-19">Tech</text><text class="mini-text" x="-58" y="-12">Product</text><text class="mini-text" x="-58" y="-5">Owner</text>
+
+      <circle class="mini" cx="-7" cy="-18" r="22"/>
+      <text class="mini-text" x="-7" y="-15" style="font-size:9px">Data</text>
+
+      <circle class="mini biz" cx="50" cy="-27" r="22"/>
+      <text class="mini-text" x="50" y="-29">Business</text><text class="mini-text" x="50" y="-22">Owner</text>
+      <polygon class="star" points="62,-52 64,-47 69,-47 65,-44 67,-39 62,-42 57,-39 59,-44 55,-47 60,-47"/>
+
+      <circle class="mini" cx="-50" cy="33" r="22"/>
+      <text class="mini-text" x="-50" y="31">Software</text><text class="mini-text" x="-50" y="38">Engineers</text>
+
+      <circle class="mini" cx="5" cy="33" r="22"/>
+      <text class="mini-text" x="5" y="28">Technology</text><text class="mini-text" x="5" y="35">Product</text><text class="mini-text" x="5" y="42">Designer</text>
+
+      <circle class="mini" cx="58" cy="26" r="22"/>
+      <text class="mini-text" x="58" y="29" style="font-size:9px">PMO</text>
+    </g>
+  </defs>
+</svg>
+<main>
+<div class="tabs" role="tablist">
+  <button class="tab" role="tab" id="tab-overview" aria-controls="panel-overview" aria-selected="true">Overview</button>
+  <button class="tab" role="tab" id="tab-supply" aria-controls="panel-supply" aria-selected="false">Supply Chain Ecosystem (zoom)</button>
+  <button class="tab" role="tab" id="tab-deliver" aria-controls="panel-deliver" aria-selected="false">SC Deliver (zoom)</button>
+</div>
+<div class="panel" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview">
+<svg viewBox="0 0 1920 1090" role="img" aria-labelledby="t d">
+  <title id="t">CTO organization diagram</title>
+  <desc id="d">CTO Risman Adnan at the centre, connected to Technology Innovation, Corporate Technology and ParaTech Academy, with Technology Office and HR Tech beside the CTO.</desc>
+
+
+  <!-- ===== Connectors ===== -->
+  <line class="link" x1="800" y1="362" x2="885" y2="400"/>
+  <line class="link" x1="1085" y1="445" x2="1180" y2="352"/>
+  <line class="link" x1="980" y1="550" x2="980" y2="662"/>
+
+  <!-- ===== Centre funnel ===== -->
+  <polygon class="funnel" points="795,252 1180,252 1225,500 1100,690 860,690 745,520"/>
+
+  <!-- ===== TECHNOLOGY INNOVATION ===== -->
+  <circle class="big" cx="500" cy="345" r="300"/>
+  <text class="big-label" x="500" y="324">TECHNOLOGY</text>
+  <text class="big-label" x="500" y="352">INNOVATION</text>
+
+  <!-- Supply Chain Ecosystem -->
+  <g id="supply-pod" class="clickable"><title>Click to zoom in</title>
+  <circle class="pod hl" cx="335" cy="222" r="95"/>
+  <use href="#squad" x="335" y="222"/>
+  <text class="pod-label" x="335" y="150">Supply Chain</text>
+  <text class="pod-label" x="335" y="164">Ecosystem</text>
+  </g>
+
+  <!-- Community Ecosystem -->
+  <circle class="pod" cx="524" cy="170" r="95"/>
+  <use href="#squad" x="524" y="170"/>
+  <text class="pod-label" x="524" y="95">Community</text>
+  <text class="pod-label" x="524" y="109">Ecosystem</text>
+
+  <!-- Customer Ecosystem -->
+  <circle class="pod" cx="685" cy="280" r="95"/>
+  <use href="#squad" x="685" y="280"/>
+  <text class="pod-label" x="685" y="215">Customer Ecosystem</text>
+
+  <!-- Arrow to Supply Chain Ecosystem -->
+  <g id="supply-arrow" class="clickable">
+    <defs><marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d98200"/></marker></defs>
+    <title>Click to zoom in</title>
+    <line class="arrow-line" x1="130" y1="88" x2="252" y2="162" marker-end="url(#arrowhead)"/>
+    <text class="arrow-text" x="8" y="70">Supply Chain</text>
+    <text class="arrow-text" x="8" y="92">Ecosystem</text>
+  </g>
+
+  <!-- Product Innovation -->
+  <circle class="pod" cx="315" cy="415" r="95"/>
+  <use href="#squad" x="315" y="415"/>
+  <text class="pod-label" x="315" y="351">Product Innovation</text>
+
+  <!-- Consumer Ecosystem -->
+  <circle class="pod" cx="645" cy="465" r="95"/>
+  <use href="#squad" x="645" y="465"/>
+  <text class="pod-label" x="645" y="397">Consumer</text>
+  <text class="pod-label" x="645" y="411">Ecosystem</text>
+
+  <!-- Finance & Business Support Technology -->
+  <circle class="pod" cx="460" cy="538" r="95"/>
+  <use href="#squad" x="460" y="538"/>
+  <text class="pod-label" x="460" y="468">Finance &amp; Business</text>
+  <text class="pod-label" x="460" y="482">Support Technology</text>
+
+  <!-- ===== CORPORATE TECHNOLOGY ===== -->
+  <circle class="big" cx="1485" cy="330" r="305"/>
+  <text class="big-label" x="1485" y="308">CORPORATE</text>
+  <text class="big-label" x="1485" y="338">TECHNOLOGY</text>
+
+  <circle class="node" cx="1487" cy="135" r="68"/>
+  <text class="node-text" x="1487" y="141">IT Security</text>
+
+  <circle class="node" cx="1326" cy="220" r="68"/>
+  <text class="node-text" x="1326" y="226">IT ERP</text>
+
+  <circle class="node" cx="1655" cy="248" r="68"/>
+  <text class="node-text" x="1655" y="240">Infra &amp; Service</text>
+  <text class="node-text" x="1655" y="260">Management</text>
+
+  <circle class="node" cx="1313" cy="399" r="68"/>
+  <text class="node-text" x="1313" y="405">IT GRC</text>
+
+  <circle class="node" cx="1646" cy="428" r="68"/>
+  <text class="node-text" x="1646" y="420">PMO &amp; Delivery</text>
+  <text class="node-text" x="1646" y="440">Management</text>
+
+  <circle class="node" cx="1489" cy="508" r="68"/>
+  <text class="node-text" x="1489" y="494">MY</text>
+  <text class="node-text" x="1489" y="514">Technology</text>
+  <text class="node-text" x="1489" y="534">Partner</text>
+
+  <!-- ===== CTO + staff units ===== -->
+  <circle class="node" cx="890" cy="560" r="66"/>
+  <text class="node-text" x="890" y="556">Technology</text>
+  <text class="node-text" x="890" y="576">Office</text>
+
+  <circle class="node" cx="1085" cy="550" r="56"/>
+  <text class="node-text" x="1085" y="546">HR</text>
+  <text class="node-text" x="1085" y="566">Tech</text>
+
+  <circle class="cto" cx="980" cy="445" r="105"/>
+  <text class="cto-text" x="980" y="415">CTO</text>
+  <text class="cto-text" x="980" y="455" style="font-weight:500">Risman</text>
+  <text class="cto-text" x="980" y="495" style="font-weight:500">Adnan</text>
+
+  <!-- ===== PARATECH ACADEMY ===== -->
+  <circle class="big" cx="980" cy="860" r="210"/>
+  <text class="academy-text" x="980" y="698">ParaTech</text>
+  <text class="academy-text" x="980" y="734">Academy</text>
+
+  <circle class="node" cx="907" cy="818" r="70"/>
+  <text class="node-text" x="907" y="824" style="font-size:15px">AI/ML Faculty</text>
+
+  <circle class="node" cx="1052" cy="818" r="70"/>
+  <text class="node-text" x="1052" y="812" style="font-size:15px">Digital Twin &amp;</text>
+  <text class="node-text" x="1052" y="832" style="font-size:15px">AI Faculty</text>
+
+  <circle class="node" cx="906" cy="958" r="70"/>
+  <text class="node-text" x="906" y="942" style="font-size:15px">Software</text>
+  <text class="node-text" x="906" y="962" style="font-size:15px">Engineering</text>
+  <text class="node-text" x="906" y="982" style="font-size:15px">Faculty</text>
+
+  <circle class="node" cx="1055" cy="958" r="70"/>
+  <text class="node-text" x="1055" y="942" style="font-size:15px">Bioinformatics</text>
+  <text class="node-text" x="1055" y="962" style="font-size:15px">and Genomics</text>
+  <text class="node-text" x="1055" y="982" style="font-size:15px">Faculty</text>
+
+  <circle class="univ" cx="1237" cy="937" r="98"/>
+  <text class="univ-text" x="1237" y="930">Paragon</text>
+  <text class="univ-text" x="1237" y="962">University</text>
+
+</svg>
+</div>
+
+<div class="panel" id="panel-supply" role="tabpanel" aria-labelledby="tab-supply" hidden>
+<svg viewBox="0 0 1200 820" role="img" aria-label="Zoomed view of the Supply Chain Ecosystem with three squads">
+  <circle class="big hl" cx="420" cy="410" r="380"/>
+  <circle class="focus-ring" cx="420" cy="410" r="392"/>
+  <g transform="translate(420 220) scale(1.6)">
+    <circle class="pod hl" r="95"/>
+    <use href="#squad"/>
+    <circle class="mini tpo" cx="-58" cy="-17" r="22"/>
+    <text class="tpo-text" x="-58" y="-19">TPO</text>
+    <text class="tpo-text" x="-58" y="-10" style="font-weight:700;font-size:7.5px">Levi</text>
+    <text class="squad-label" x="0" y="-68">SC Plan</text>
+  </g>
+  <g transform="translate(585 505) scale(1.6)">
+    <circle class="pod hl" r="95"/>
+    <use href="#squad"/>
+    <circle class="mini tpo" cx="-58" cy="-17" r="22"/>
+    <text class="tpo-text" x="-58" y="-19">TPO</text>
+    <text class="tpo-text" x="-58" y="-10" style="font-weight:700;font-size:7.5px">Vegi</text>
+    <text class="squad-label" x="0" y="-68">SC Make</text>
+  </g>
+  <g id="deliver-pod" class="clickable" transform="translate(255 505) scale(1.6)"><title>Click to focus on SC Deliver</title>
+    <circle class="pod hl" r="95"/>
+    <use href="#squad"/>
+    <circle class="mini tpo" cx="-58" cy="-17" r="22"/>
+    <text class="tpo-text" x="-58" y="-19">TPO</text>
+    <text class="tpo-text" x="-58" y="-10" style="font-weight:700;font-size:7.5px">Arifin</text>
+    <text class="squad-label" x="0" y="-68">SC Deliver</text>
+  </g>
+  <text class="f-title" x="830" y="200" style="font-size:28px">Supply Chain</text>
+  <text class="f-title" x="830" y="236" style="font-size:28px">Ecosystem</text>
+  <text class="f-sub" x="830" y="268">Part of Technology Innovation</text>
+  <text class="f-sub" x="830" y="320" style="font-weight:700">Squads and Tech Product Owners</text>
+  <circle class="mini tpo" cx="850" cy="360" r="20"/>
+  <text class="f-role" x="885" y="358" style="font-weight:700">SC Plan</text>
+  <text class="f-sub" x="885" y="382">TPO: Levi</text>
+  <circle class="mini tpo" cx="850" cy="430" r="20"/>
+  <text class="f-role" x="885" y="428" style="font-weight:700">SC Make</text>
+  <text class="f-sub" x="885" y="452">TPO: Vegi</text>
+  <circle class="mini tpo" cx="850" cy="500" r="20"/>
+  <text class="f-role" x="885" y="498" style="font-weight:700">SC Deliver</text>
+  <text class="f-sub" x="885" y="522">TPO: Arifin</text>
+</svg>
+</div>
+<div class="panel" id="panel-deliver" role="tabpanel" aria-labelledby="tab-deliver" hidden>
+<svg viewBox="0 0 1400 980" role="img" aria-label="SC Deliver squad with the Tech Product Owner role split into sub-areas">
+  <ellipse class="ring-dash" cx="700" cy="470" rx="690" ry="440"/>
+  <text class="f-title" x="700" y="75" text-anchor="middle">SC Deliver</text>
+  <circle class="tpo-c" cx="300" cy="240" r="95"/>
+  <text class="d-text" x="300" y="248">TPO Lead</text>
+  <rect class="tag" x="240" y="287" width="120" height="50" rx="5"/>
+  <text class="tag-text" x="300" y="320">Arifin</text>
+  <circle class="tpo-c" cx="700" cy="240" r="95"/>
+  <text class="d-text" x="700" y="234">Intralogistics &amp;</text>
+  <text class="d-text" x="700" y="262">Fulfillment</text>
+  <rect class="tag alt" x="640" y="287" width="120" height="50" rx="5"/>
+  <text class="tag-text" x="700" y="320">Arifin*</text>
+  <circle class="tpo-c" cx="1100" cy="240" r="95"/>
+  <text class="d-text" x="1100" y="210">TPO</text>
+  <text class="d-text" x="1100" y="238">Transport &amp;</text>
+  <text class="d-text" x="1100" y="266">Mobility</text>
+  <rect class="tag" x="1040" y="287" width="120" height="50" rx="5"/>
+  <text class="tag-text" x="1100" y="320">Rafi</text>
+  <circle class="tpo-c" cx="300" cy="480" r="95"/>
+  <text class="d-text" x="300" y="420">TPO</text>
+  <text class="d-text" x="300" y="444">Consignment &amp;</text>
+  <text class="d-text" x="300" y="468">External</text>
+  <text class="d-text" x="300" y="492">Inventory</text>
+  <rect class="tag" x="240" y="527" width="120" height="50" rx="5"/>
+  <text class="tag-text" x="300" y="560">Naufal</text>
+  <circle class="pmo-c" cx="700" cy="480" r="95"/>
+  <text class="d-text" x="700" y="460">Project</text>
+  <text class="d-text" x="700" y="488">Management</text>
+  <text class="d-text" x="700" y="516">Office (PMO)</text>
+  <circle class="role-c" cx="1100" cy="480" r="95"/>
+  <text class="d-text" x="1100" y="488">Data</text>
+  <circle class="role-c biz" cx="300" cy="720" r="95"/>
+  <text class="d-small" x="300" y="714">Business</text>
+  <text class="d-small" x="300" y="738">Owner</text>
+  <polygon class="star" points="336,621 341,636 357,636 344,645 349,660 336,651 323,660 328,645 315,636 331,636"/>
+  <circle class="role-c" cx="700" cy="720" r="95"/>
+  <text class="d-small" x="700" y="714">Software</text>
+  <text class="d-small" x="700" y="738">Engineers</text>
+  <circle class="role-c" cx="1100" cy="720" r="95"/>
+  <text class="d-small" x="1100" y="696">Technology</text>
+  <text class="d-small" x="1100" y="720">Product</text>
+  <text class="d-small" x="1100" y="744">Designer</text>
+  <text class="f-sub" x="700" y="955" text-anchor="middle">Green: Tech Product Owner split by area · Grey: other squad roles · * Arifin also covers Intralogistics &amp; Fulfillment</text>
+</svg>
+</div>
+</main>
+<script>
+(function () {
+  var tabs = document.querySelectorAll('.tab');
+  function show(id) {
+    tabs.forEach(function (t) {
+      var on = t.id === 'tab-' + id;
+      t.setAttribute('aria-selected', on);
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+    });
+  }
+  tabs.forEach(function (t) {
+    t.addEventListener('click', function () { show(t.id.replace('tab-', '')); });
+  });
+  var pod = document.getElementById('supply-pod');
+  if (pod) pod.addEventListener('click', function () { show('supply'); });
+  var arrow = document.getElementById('supply-arrow');
+  if (arrow) arrow.addEventListener('click', function () { show('supply'); });
+  var dpod = document.getElementById('deliver-pod');
+  if (dpod) dpod.addEventListener('click', function () { show('deliver'); });
+})();
+</script>
+</body>
+</html>

@@ -37,22 +37,55 @@
   h1 { font-size:21px; margin:0 0 2px; }
   .sub { color:var(--muted); margin:0 0 12px; }
 
-  .tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
-  .tab { border-radius:999px; padding:5px 14px; font-size:13px; }
-  .tab.on { background:var(--accent); color:#fff; }
-  .info { display:flex; gap:18px; flex-wrap:wrap; font-size:13px; padding:8px 12px; margin-bottom:12px; border:1px solid var(--bd);
-          border-radius:8px; background:var(--panel); }
-  .info b { color:var(--accent); }
+  .top { margin-bottom:14px; }
+  .top h1 { margin:0; }
+  .info-btn { order:3; margin-left:auto; padding:4px 12px; font-size:13px; white-space:nowrap; align-self:center; border-radius:999px; }
+  .info-btn:hover { background:color-mix(in srgb,var(--accent) 10%,transparent); }
+  .top .sub { margin:2px 0 0; }
 
-  .bar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+  /* scenario selection */
+  .scn { display:flex; gap:10px 28px; flex-wrap:wrap; align-items:flex-start; margin-bottom:10px; }
+  .scn-group { display:flex; flex-direction:column; gap:5px; }
+  .scn-label { font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+  .tabs { display:flex; gap:6px; flex-wrap:wrap; }
+  .tab { display:inline-flex; align-items:center; gap:7px; border-radius:999px; padding:4px 13px 4px 5px; font-size:13px; color:var(--ink);
+         border-color:var(--bd); background:var(--panel); }
+  .tab b { display:inline-flex; width:20px; height:20px; border-radius:50%; align-items:center; justify-content:center; font-size:11px;
+           background:color-mix(in srgb,var(--accent) 14%,transparent); color:var(--accent); }
+  .tab:hover { border-color:var(--accent); }
+  .tab.on { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .tab.on b { background:#fff; color:var(--accent); }
+  .info { padding:10px 14px; margin-bottom:12px; border:1px solid var(--bd); border-left:4px solid var(--accent); border-radius:8px; background:var(--panel); }
+  .info .it { font-size:15px; font-weight:600; margin-bottom:2px; }
+  .info .ii { font-size:13px; color:var(--ink); }
+  .info .if { display:flex; gap:6px; flex-wrap:wrap; margin-top:7px; align-items:center; }
+  .info .if > span:first-child { font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-right:2px; }
+  .info .fc { font-size:12px; padding:1px 9px; border-radius:999px; background:color-mix(in srgb,var(--accent) 10%,transparent); color:var(--accent); }
+
+  /* toolbar */
+  .toolbar { position:sticky; top:0; z-index:30; background:var(--panel); border:1px solid var(--bd); border-radius:10px; padding:8px 12px 10px;
+             margin-bottom:12px; box-shadow:0 4px 14px rgba(15,23,42,.08); }
+  .tb-row { display:flex; gap:8px 18px; align-items:center; flex-wrap:wrap; }
+  .tb-group { display:flex; gap:8px; align-items:center; }
+  .tb-group + .tb-group { padding-left:18px; border-left:1px solid var(--bd); }
+  .tb-label { color:var(--muted); font-size:12px; }
   button, select { font:inherit; border:1px solid var(--accent); background:transparent; color:var(--accent);
                    padding:6px 14px; border-radius:8px; cursor:pointer; }
   select { padding:6px 8px; }
-  button.primary { background:var(--accent); color:#fff; }
+  button.primary { background:var(--accent); color:#fff; min-width:92px; }
   button:disabled { opacity:.4; cursor:default; }
-  .steps { display:flex; gap:6px; margin-left:8px; flex-wrap:wrap; }
-  .st { font-size:12px; padding:3px 9px; border-radius:999px; border:1px solid var(--bd); color:var(--muted); transition:.3s; white-space:nowrap; }
-  .st.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+  button[aria-pressed="true"] { background:color-mix(in srgb,var(--accent) 14%,transparent); }
+  .seg { display:inline-flex; border:1px solid var(--accent); border-radius:8px; overflow:hidden; }
+  .seg button { border:0; border-radius:0; padding:5px 10px; font-size:12.5px; }
+  .seg button + button { border-left:1px solid var(--accent); }
+  .seg button.on { background:var(--accent); color:#fff; }
+  .steps { display:flex; gap:0; margin-top:9px; overflow-x:auto; padding-bottom:2px; }
+  .st { flex:1 1 0; min-width:max-content; display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); padding:0 10px 0 0; transition:.3s; white-space:nowrap; position:relative; }
+  .st i { font-style:normal; width:20px; height:20px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:600;
+          border:1px solid var(--bd); background:var(--panel); flex:none; transition:.3s; }
+  .st:not(:last-child)::after { content:""; flex:1; height:2px; background:var(--bd); margin-left:4px; min-width:12px; transition:.3s; }
+  .st.done { color:var(--ink); } .st.done i { background:var(--ok); border-color:var(--ok); color:#fff; } .st.done::after { background:var(--ok); }
+  .st.on { color:var(--accent); font-weight:600; } .st.on i { background:var(--accent); border-color:var(--accent); color:#fff; box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent); }
 
   .caption { padding:10px 14px; border-left:4px solid var(--accent); background:color-mix(in srgb,var(--accent) 8%,transparent);
              border-radius:4px; margin-bottom:14px; min-height:62px; }
@@ -61,7 +94,7 @@
   .grid { display:grid; grid-template-columns:minmax(340px,.75fr) minmax(620px,1.65fr); gap:16px; align-items:start; }
   @media (max-width:1100px) { .grid { grid-template-columns:1fr; } .mapcol { order:-1; position:static !important; } }
 
-  .mapcol { position:sticky; top:12px; }
+  .mapcol { position:sticky; top:calc(var(--tb-h, 0px) + 12px); }
   .card { background:var(--panel); border:1px solid var(--bd); border-radius:10px; padding:12px 14px; }
   .banner { display:flex; gap:10px; align-items:center; background:var(--do-bg); border:1px solid var(--do-bd); border-radius:8px;
             margin-bottom:10px; transform:translateY(-8px); opacity:0; max-height:0; overflow:hidden; padding:0 12px; transition:all .6s; }
@@ -186,9 +219,8 @@
   .secl { stroke-width:1; stroke-dasharray:2 3; }
   .sect { font-size:8px; fill:var(--muted); paint-order:stroke; stroke:var(--aisle); stroke-width:3px; }
   #gStruct.off { display:none; }
-  button[aria-pressed="true"] { background:color-mix(in srgb,var(--accent) 14%,transparent); }
-  .s6ctl { display:none; gap:6px; align-items:center; font-size:12px; color:var(--muted); }
-  .s6ctl.show { display:flex; }
+  .s6ctl { display:none; } .s6ctl.show { display:flex; }
+  .s6ctl label { display:flex; gap:6px; align-items:center; font-size:12px; color:var(--muted); }
   .s6ctl input { font:inherit; width:76px; padding:5px 6px; border:1px solid var(--accent); border-radius:8px; background:var(--panel); color:var(--ink); }
   .s6ctl select { max-width:260px; }
   .chip.zero { opacity:.4; }
@@ -202,36 +234,94 @@
   .ly tbody tr { animation:rise .35s ease; }
   .ly td { white-space:nowrap; } .ly td small { color:var(--muted); }
   .short { color:var(--bad); font-weight:600; }
-  .stdef { margin-top:16px; }
-  .stdef h3 { margin:0 0 4px; font-size:15px; } .stdef h4 { margin:14px 0 6px; font-size:13px; }
-  .stdef ul { margin:0; padding-left:20px; font-size:12.5px; } .stdef li { margin:3px 0; }
+  /* desktop: one-page app. The map always fits the viewport; the logic column scrolls on its own and follows the running step */
+  @media (min-width:1101px) and (min-height:640px) {
+    html, body { height:100%; overflow:hidden; }
+    .wrap { height:100vh; display:flex; flex-direction:column; padding:8px 16px 10px; }
+    .top { display:flex; align-items:baseline; gap:2px 16px; margin-bottom:6px; }
+    .top h1 { font-size:19px; white-space:nowrap; }
+    .top .sub { order:2; margin:0; font-size:12px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .scn { margin-bottom:6px; gap:4px 24px; }
+    .scn-group { flex-direction:row; align-items:center; gap:8px; }
+    .info { padding:5px 12px; margin-bottom:6px; display:flex; gap:2px 14px; align-items:baseline; flex-wrap:wrap; }
+    .info .it { margin:0; font-size:14px; } .info .ii { font-size:12.5px; flex:1 1 320px; } .info .if { margin:0; }
+    .toolbar { position:static; margin-bottom:6px; box-shadow:none; padding:6px 12px 8px; }
+    .steps { margin-top:6px; }
+    .caption { min-height:0; padding:5px 12px; margin-bottom:8px; font-size:13px; }
+    .grid { flex:1; min-height:0; align-items:stretch; }
+    .datacol { overflow-y:auto; min-height:0; padding:2px 10px 55vh 2px; overscroll-behavior:contain; scrollbar-width:thin; }
+    .mapcol { position:static; min-height:0; display:flex; }
+    .mapcol .card { flex:1; display:flex; flex-direction:column; min-height:0; padding:10px 12px; }
+    .mapcol svg#map { flex:1; min-height:0; width:100%; height:100%; }
+    .banner.show { padding:5px 12px; margin-bottom:6px; }
+    .legend { margin-top:6px; gap:4px 12px; font-size:11.5px; }
+    /* reference information becomes a pop-over so it never takes space from the map */
+    .infotabs { display:none; position:fixed; z-index:100; inset:7vh 6vw; margin:0; overflow:auto; box-shadow:0 20px 60px rgba(15,23,42,.35); }
+    .infotabs.open { display:block; }
+    .it-backdrop { position:fixed; inset:0; z-index:90; background:rgba(15,23,42,.45); }
+    .it-backdrop[hidden] { display:none; }
+    .it-head { position:sticky; top:0; z-index:2; }
+  }
+  .it-close { display:none; margin-left:8px; border:0; font-size:20px; line-height:1; padding:2px 8px; margin-bottom:6px; color:var(--muted); }
+  @media (min-width:1101px) and (min-height:640px) { .it-close { display:inline-block; } .it-tabs { margin-left:auto; } }
+  .it-backdrop { display:none; } @media (min-width:1101px) and (min-height:640px) { .it-backdrop { display:block; } }
+  .infotabs { margin-top:16px; padding:0; overflow:hidden; scroll-margin-top:calc(var(--tb-h, 0px) + 12px); }
+  .bin.hov { stroke:var(--accent); stroke-width:2.5; }
+  .map-tip { position:fixed; z-index:200; pointer-events:none; max-width:300px; padding:8px 10px; font-size:12px; line-height:1.45; background:var(--panel); color:var(--ink);
+             border:1px solid var(--bd); border-radius:8px; box-shadow:0 8px 24px rgba(15,23,42,.25); }
+  .map-tip[hidden] { display:none; }
+  .map-tip .th { display:flex; align-items:center; gap:6px; font-weight:700; font-size:13px; margin-bottom:3px; }
+  .map-tip .th i { width:10px; height:10px; border-radius:3px; display:inline-block; }
+  .map-tip .tk { color:var(--muted); } .map-tip .ts { margin-top:5px; padding-top:4px; border-top:1px solid var(--bd); }
+  .map-tip .tw { color:var(--accent); font-weight:600; }
+  svg#map { cursor:default; } svg#map.onbin { cursor:help; } #map g.gdyn * { pointer-events:none; }
+  .it-head { display:flex; gap:8px 20px; align-items:center; flex-wrap:wrap; padding:10px 14px 0; border-bottom:1px solid var(--bd); background:color-mix(in srgb,var(--accent) 4%,var(--panel)); }
+  .it-head h3 { margin:0 0 8px; font-size:14px; }
+  .it-tabs { display:flex; gap:2px; flex-wrap:wrap; margin-left:auto; }
+  .it-tabs button { border:0; border-bottom:3px solid transparent; border-radius:6px 6px 0 0; padding:7px 14px; font-size:13px; color:var(--muted); }
+  .it-tabs button:hover { color:var(--ink); }
+  .it-tabs button[aria-selected="true"] { color:var(--accent); font-weight:600; border-bottom-color:var(--accent); background:var(--panel); }
+  .it-panel { padding:12px 14px 14px; animation:rise .3s ease; }
+  .it-panel[hidden] { display:none; }
+  .it-panel h4 { margin:14px 0 6px; font-size:13px; }
+  .it-panel ul { margin:0; padding-left:20px; font-size:12.5px; } .it-panel li { margin:3px 0; }
   .hier { align-items:center; } .hier .sep { color:var(--muted); }
   .note { margin-top:16px; color:var(--muted); font-size:12.5px; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Multi-Strategy Simulation Tools</h1>
-  <p class="sub"><b>SAP EWM – from order to picking and packing.</b> Outbound delivery → stock removal → warehouse tasks → WOCR → warehouse orders → picking in the aisles → packing</p>
+  <header class="top">
+    <h1>Multi-Strategy Simulation Tools</h1>
+    <button id="btnInfo" class="info-btn" title="Reference information: warehouse structure, storage types, rules, data notes" aria-haspopup="dialog">ⓘ Information</button>
+    <p class="sub"><b>SAP EWM – from order to picking and packing.</b> Outbound delivery → stock removal → warehouse tasks → WOCR → warehouse orders → picking in the aisles → packing</p>
+  </header>
 
-  <div class="tabs" id="tabs"></div>
-  <div class="info" id="info"></div>
+  <nav class="scn" aria-label="Scenario selection">
+    <div class="scn-group"><span class="scn-label">Standard picking</span><div class="tabs" id="tabsA"></div></div>
+    <div class="scn-group"><span class="scn-label">Layered stock removal</span><div class="tabs" id="tabsB"></div></div>
+  </nav>
+  <section class="info" id="info" aria-live="polite"></section>
 
-  <div class="bar">
-    <button class="primary" id="btnPlay">▶ Play</button>
-    <button id="btnNext">Next step</button>
-    <button id="btnReset">⟲ Reset</button>
-    <label style="color:var(--muted);font-size:12px">Speed
-      <select id="speed"><option value="0.6">0.6×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>
-    <button id="btnStruct" aria-pressed="true" title="Show storage types and sections on the map">Storage structure</button>
-    <div class="s6ctl" id="s6ctl"><label>Order SKU E <input type="number" id="s6qty" min="1" max="1499" step="1" value="620"> PC</label>
-      <select id="s6pre">
-        <option value="" hidden>custom quantity</option>
-        <option value="620">620 PC = 1 PAL + 2 CAR + 2 IBX</option>
-        <option value="500">500 PC = 1 PAL</option>
-        <option value="380">380 PC = 7 CAR + 3 IBX (spills to 2nd bin)</option>
-        <option value="1075">1,075 PC = 2 PAL + 1 CAR + 2 IBX + 5 PC</option>
-      </select></div>
+  <div class="toolbar" id="toolbar" role="toolbar" aria-label="Simulation controls">
+    <div class="tb-row">
+      <div class="tb-group">
+        <button class="primary" id="btnPlay">▶ Play</button>
+        <button id="btnNext">Next step ›</button>
+        <button id="btnReset">⟲ Reset</button>
+      </div>
+      <div class="tb-group"><span class="tb-label">Speed</span>
+        <div class="seg" id="speed" role="group" aria-label="Playback speed"><button data-v="0.6">0.6×</button><button data-v="1" class="on">1×</button><button data-v="2">2×</button></div></div>
+      <div class="tb-group"><button id="btnStruct" aria-pressed="true" title="Show storage types and sections on the map">Storage structure</button></div>
+      <div class="tb-group s6ctl" id="s6ctl"><label>Order SKU E <input type="number" id="s6qty" min="1" max="1499" step="1" value="620"> PC</label>
+        <select id="s6pre" aria-label="Quantity presets">
+          <option value="" hidden>custom quantity</option>
+          <option value="620" selected>620 PC = 1 PAL + 2 CAR + 2 IBX</option>
+          <option value="500">500 PC = 1 PAL</option>
+          <option value="380">380 PC = 7 CAR + 3 IBX (spills to 2nd bin)</option>
+          <option value="1075">1,075 PC = 2 PAL + 1 CAR + 2 IBX + 5 PC</option>
+        </select></div>
+    </div>
     <div class="steps" id="steps"></div>
   </div>
 
@@ -252,17 +342,28 @@
           <span><i style="background:var(--rk40);border:1px solid var(--rack-bd)"></i>Bulk lane</span>
           <span><i style="background:var(--aisle);border:1px solid var(--rack-bd)"></i>Aisle (gangway)</span>
           <span><i style="background:var(--d124)"></i><i style="background:var(--d125)"></i><i style="background:var(--d126)"></i><i style="background:var(--d127)"></i>Delivery colour</span>
-          <span><i style="border:1.5px dashed var(--st10)"></i><i style="border:1.5px dashed var(--st20)"></i><i style="border:1.5px dashed var(--st30)"></i><i style="border:1.5px dashed var(--st40)"></i>Storage type · dotted line = section boundary · hover a bin for details (<a href="#stdef" style="color:var(--accent)">definitions</a>)</span>
+          <span><i style="border:1.5px dashed var(--st10)"></i><i style="border:1.5px dashed var(--st20)"></i><i style="border:1.5px dashed var(--st30)"></i><i style="border:1.5px dashed var(--st40)"></i>Storage type · dotted line = section boundary · hover a bin for details (<a href="#stdef" id="lnkDefs" style="color:var(--accent)">definitions</a>)</span>
         </div>
       </div>
     </div>
   </div>
 
-  <section class="card stdef" id="stdef">
-    <h3>Warehouse structure in SAP EWM</h3>
-    <div class="meta">Definitions follow SAP Learning. The codes are example values for this floor plan – hover a bin on the map to see where it sits.</div>
-    <div class="chips hier"><span class="chip">WH01 · warehouse number</span><span class="sep">›</span><span class="chip">0010 – 0040, 9010 – 9030 · storage type</span><span class="sep">›</span><span class="chip">0001 / 0002 · storage section</span><span class="sep">›</span><span class="chip">04-R5 · storage bin</span><span class="sep">›</span><span class="chip">quant / HU</span></div>
-    <table><thead><tr><th>Term</th><th>SAP EWM definition</th><th>In this map</th></tr></thead><tbody>
+  <div class="it-backdrop" id="itBackdrop" hidden></div>
+  <section class="card infotabs" id="stdef" aria-label="Reference information">
+    <div class="it-head">
+      <h3>Reference information</h3>
+      <div class="it-tabs" role="tablist" aria-label="Information topics">
+        <button role="tab" id="itab-structure" aria-controls="ipanel-structure" aria-selected="true" data-p="structure">Warehouse structure</button>
+        <button role="tab" id="itab-types" aria-controls="ipanel-types" aria-selected="false" data-p="types">Storage types</button>
+        <button role="tab" id="itab-rules" aria-controls="ipanel-rules" aria-selected="false" data-p="rules">Storage type rules</button>
+        <button role="tab" id="itab-about" aria-controls="ipanel-about" aria-selected="false" data-p="about">About the data</button>
+      </div>
+      <button class="it-close" id="itClose" aria-label="Close reference information">×</button>
+    </div>
+    <div class="it-panel" role="tabpanel" id="ipanel-structure" aria-labelledby="itab-structure">
+      <div class="meta">Definitions follow SAP Learning. The codes are example values for this floor plan – hover a bin on the map to see where it sits.</div>
+      <div class="chips hier"><span class="chip">WH01 · warehouse number</span><span class="sep">›</span><span class="chip">0010 – 0040, 9010 – 9030 · storage type</span><span class="sep">›</span><span class="chip">0001 / 0002 · storage section</span><span class="sep">›</span><span class="chip">04-R5 · storage bin</span><span class="sep">›</span><span class="chip">quant / HU</span></div>
+      <table><thead><tr><th>Term</th><th>SAP EWM definition</th><th>In this map</th></tr></thead><tbody>
       <tr><td><b>Warehouse number</b></td><td>The highest organizational unit in warehouse management, usually one building or distribution centre (4-character code).</td><td>WH01 – the whole floor plan</td></tr>
       <tr><td><b>Storage type</b></td><td>A physical or logical subdivision of a warehouse complex (4 characters). Its role and settings control how putaway, stock removal and stock movements work there.</td><td>0010 Shelving (aisles 01–03) · 0020 Carton rack (04–05) · 0030 Pallet rack (06–08) · 0040 Bulk storage (09) · 9010 GI staging · 9020 GR zone · 9030 Pack station</td></tr>
       <tr><td><b>Storage section</b></td><td>An organizational subdivision of a storage type. It groups bins with similar attributes (fast movers, heavy goods…) and is used by putaway.</td><td>0001 fast movers (right half of each storage type, nearer the docks) · 0002 slow movers (left half)</td></tr>
@@ -271,8 +372,10 @@
       <tr><td><b>Quant</b></td><td>The quantity of one product in one storage bin, resource or transportation unit – with batch, GR date and expiry.</td><td>Each row in the stock tables</td></tr>
       <tr><td><b>Activity area</b></td><td>A logical group of bins (it can span storage types) that drives processing, e.g. the WOCR search.</td><td>PCK-P = shelving aisles 01–03 · PCK-R = aisles 04–09</td></tr>
     </tbody></table>
-    <h4>Storage types in this warehouse</h4>
-    <table><thead><tr><th>Storage type</th><th>Role</th><th>Holds</th><th>Bin type</th><th>Sections</th><th>Search priority per UoM layer (tabs 6–7)</th></tr></thead><tbody>
+    </div>
+    <div class="it-panel" role="tabpanel" id="ipanel-types" aria-labelledby="itab-types" hidden>
+      <div class="meta">Storage types of this warehouse, their bin types and the search priority each UoM layer gives them in tabs 6–7.</div>
+      <table><thead><tr><th>Storage type</th><th>Role</th><th>Holds</th><th>Bin type</th><th>Sections</th><th>Search priority per UoM layer (tabs 6–7)</th></tr></thead><tbody>
       <tr><td><b style="color:var(--st10)">0010</b> Shelving</td><td>Standard storage</td><td>loose PC, inner boxes</td><td>S1</td><td>0001, 0002</td><td>IBX prio 1 · PC prio 1</td></tr>
       <tr><td><b style="color:var(--st20)">0020</b> Carton rack</td><td>Standard storage</td><td>cartons, inner boxes</td><td>C1</td><td>0001, 0002</td><td>CAR prio 1 · IBX prio 2</td></tr>
       <tr><td><b style="color:var(--st30)">0030</b> Pallet rack</td><td>Standard storage</td><td>full and opened pallets (one HU per bin)</td><td>P1</td><td>0001, 0002</td><td>PAL prio 1 · CAR prio 2</td></tr>
@@ -281,8 +384,10 @@
       <tr><td><b>9020</b> GR zone</td><td>Staging area group (inbound)</td><td>unloaded pallets before putaway</td><td>–</td><td>–</td><td>–</td></tr>
       <tr><td><b>9030</b> Pack station</td><td>Work centre</td><td>building shipping HUs</td><td>–</td><td>–</td><td>–</td></tr>
     </tbody></table>
-    <h4>Typical rules set on the storage type</h4>
-    <ul>
+    </div>
+    <div class="it-panel" role="tabpanel" id="ipanel-rules" aria-labelledby="itab-rules" hidden>
+      <div class="meta">Settings that typically sit on a storage type and shape putaway and stock removal.</div>
+      <ul>
       <li><b>Storage type role</b> – standard storage, identification point, pick point, staging area group, work centre… decides how the type is used.</li>
       <li><b>Putaway</b> – with the <i>storage section check</i>, the product’s putaway control indicator lists the allowed sections; with the <i>bin type check</i>, the HU type must fit the bin type (a pallet only goes to a P1 slot).</li>
       <li><b>Capacity and mixed storage</b> – e.g. the pallet rack allows one HU per bin, while shelving allows several products per bin <i>(verify in your system)</i>.</li>
@@ -290,11 +395,13 @@
       <li><b>Storage type group</b> – pools quants of several storage types so that one sort (strict FIFO / FEFO) runs across all of them instead of storage type by storage type.</li>
       <li><b>Full stock removal</b> – in pallet storage a complete HU can be removed with an HU WT instead of picking pieces <i>(verify)</i>.</li>
     </ul>
-  </section>
-
-  <p class="note">The DO quantities, UoM conversions and the WT / WO grouping of scenario 1 follow the diagram. Bins, batch stock, dates, the layout, consolidation groups and WOCR settings are made-up examples for illustration.
+    </div>
+    <div class="it-panel" role="tabpanel" id="ipanel-about" aria-labelledby="itab-about" hidden>
+      <p class="note" style="margin:0">The DO quantities, UoM conversions and the WT / WO grouping of scenario 1 follow the diagram. Bins, batch stock, dates, the layout, consolidation groups and WOCR settings are made-up examples for illustration.
     Scenarios 6 and 7 (stock of SKUs E–G, storage types, sections, priorities, orders) are also made-up example data. The floor plan follows the reference layout, without the conveyor.
     Details of the strategies are in <i>ewm-wocr-and-picking-strategy.md</i>.</p>
+    </div>
+  </section>
 </div>
 
 <script>
@@ -690,7 +797,7 @@ function pathSeq(ids, start) {   // WO sorting: nearest next bin along the gangw
   return out;
 }
 
-const gStatic = el('g', {}, map), gStruct = el('g', { id:'gStruct' }, map), gDyn = el('g', {}, map);
+const gStatic = el('g', {}, map), gStruct = el('g', { id:'gStruct' }, map), gDyn = el('g', { class:'gdyn' }, map);
 const binEls = {}, binBase = {};
 function truck(x, y) {
   el('rect', { class:'trk', x, y, width:150, height:52, rx:3 }, gStatic);
@@ -721,7 +828,6 @@ function truck(x, y) {
       const id = String(a).padStart(2, '0') + '-' + side + bay, r = binRect(id), sec = sectOf(id);
       binBase[id] = 'bin ' + s.k;
       binEls[id] = el('rect', { class:binBase[id], x:r.x + 1, y:r.y + 1, width:r.w - 2, height:r.h - 2, rx:2 }, gStatic);
-      el('title', {}, binEls[id]).textContent = `Bin ${id}\nStorage type ${A.st} · ${s.name}\nSection ${sec} · ${SECT[sec]}\nBin type ${s.bt}\nActivity area PCK-${a <= 3 ? 'P' : 'R'}`;
     } });
   });
   // outbound: GI staging, pack station, doors and trucks
@@ -971,7 +1077,18 @@ const SEC = {
 };
 
 /* ======================= step logic ======================= */
-const show = key => { const s = $('#sec-' + key); s.classList.add('show'); s.scrollIntoView({ behavior:'smooth', block:'nearest' }); };
+/* keep the running part of the logic column centred (own scroll container on desktop, page scroll on small screens) */
+let focusEl = null, focusRaf = 0;
+function centre(el) {
+  const box = $('#datacol');
+  if (getComputedStyle(box).overflowY !== 'auto') { el.scrollIntoView({ behavior:'smooth', block:'nearest' }); return; }
+  const r = el.getBoundingClientRect(), b = box.getBoundingClientRect(), off = r.top - b.top;
+  const top = r.height + 24 >= b.height ? box.scrollTop + off - 8 : box.scrollTop + off - (b.height - r.height) / 2;
+  box.scrollTo({ top:Math.max(0, top), behavior:'smooth' });
+}
+const focusRO = new ResizeObserver(() => { if (focusEl && busy && !focusRaf) focusRaf = requestAnimationFrame(() => { focusRaf = 0; centre(focusEl); }); });
+function setFocus(el) { focusRO.disconnect(); focusEl = el; focusRO.observe(el); centre(el); }
+const show = key => { const s = $('#sec-' + key); s.classList.add('show'); setFocus(s); };
 const pace = () => sc.wts.length > 10 ? .45 : 1;
 let routes = {};
 const RUN = {
@@ -999,7 +1116,7 @@ const RUN = {
     for (let i = 0; i < sc.layers.length; i++) {
       const L = sc.layers[i], blk = $('#ly' + i), tb = $('#lyb' + i), fns = blk.querySelectorAll('.fn');
       prev.forEach(e => e.remove()); prev = [];
-      blk.classList.add('show'); blk.scrollIntoView({ behavior:'smooth', block:'nearest' });
+      blk.classList.add('show'); setFocus(blk);
       tb.innerHTML = layerRows(L, 0, false); fns[0].classList.add('on');
       const marks = L.elig.map(q => { const m = binMark(q.bin, '?'); m.lbl.textContent = L.uom; m.q = q; return m; });
       await sleep(1200 * f);
@@ -1121,7 +1238,7 @@ function capFor(i) {
 }
 function render() {
   $('#caption').innerHTML = step === 0 ? 'Press <b>Play</b> to follow the delivery from the order to the packed pallet.' : capFor(step - 1);
-  document.querySelectorAll('.st').forEach((d, i) => d.classList.toggle('on', i === step - 1));
+  document.querySelectorAll('.st').forEach((d, i) => { d.classList.toggle('on', i === step - 1); d.classList.toggle('done', i < step - 1 || (i === step - 1 && !busy)); });
   $('#btnNext').disabled = step >= sc.steps.length || busy;
   $('#btnPlay').textContent = playing ? '❚❚ Pause' : (step >= sc.steps.length ? '▶ Replay' : '▶ Play');
 }
@@ -1132,6 +1249,8 @@ async function next() {
 }
 function reset() {
   token++; playing = false; step = 0; busy = false; routes = {}; pass.g = null; pass.n = 0;
+  focusRO.disconnect(); focusEl = null; $('#datacol').scrollTop = 0;
+  hovBin = null; tipEl.hidden = true;
   gDyn.innerHTML = '';
   Object.keys(binEls).forEach(id => binEls[id].setAttribute('class', binBase[id]));
   Object.keys(badges).forEach(k => delete badges[k]);
@@ -1139,15 +1258,16 @@ function reset() {
   $('#zt1').classList.remove('in'); $('#zt2').classList.remove('in');
   $('#banner').classList.remove('show');
   $('#datacol').innerHTML = sc.steps.map((k, i) => `<section class="card sec" id="sec-${k}">${SEC[k](i + 1)}</section>`).join('');
-  $('#steps').innerHTML = sc.steps.map((k, i) => `<div class="st">${i + 1} ${NAMES[k]}</div>`).join('');
+  $('#steps').innerHTML = sc.steps.map((k, i) => `<div class="st"><i>${i + 1}</i>${NAMES[k]}</div>`).join('');
   buildScenarioMap(); render();
 }
 function load(key) {
   current = key; sc = SC[key]; sc.key = key;
   woKeys().forEach(wo => { const s = sc.wos[wo]; s.seq = pathSeq(s.seq, s.start === 'pass' ? PASS : START); });
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.k === key));
+  document.querySelectorAll('.tab').forEach(t => { const on = t.dataset.k === key; t.classList.toggle('on', on); on ? t.setAttribute('aria-current', 'true') : t.removeAttribute('aria-current'); });
   $('#s6ctl').classList.toggle('show', key === 's6');
-  $('#info').innerHTML = `<div><b>Idea:</b> ${sc.idea}</div><div><b>EWM features:</b> ${sc.feature}</div>`;
+  $('#info').innerHTML = `<div class="it">${sc.tab}</div><div class="ii">${sc.idea}</div>
+    <div class="if"><span>EWM features</span>${sc.feature.split(' · ').map(f => `<span class="fc">${f}</span>`).join('')}</div>`;
   reset();
 }
 async function play() {
@@ -1158,14 +1278,75 @@ async function play() {
 }
 SC.s6 = buildS6(620);   // the layered scenarios need the map helpers (parseBin, stypeOf)
 SC.s7 = buildS7();
+const SHORT = { s1:'Single delivery', s2:'Same ship-to', s3:'Two-step batch', s4:'FEFO batches', s5:'Pick-pack-pass', s6:'One order', s7:'4-order wave' };
 Object.keys(SC).forEach(k => {
-  const b = document.createElement('button'); b.className = 'tab'; b.dataset.k = k; b.textContent = SC[k].tab; b.onclick = () => load(k);
-  $('#tabs').appendChild(b);
+  const b = document.createElement('button'); b.className = 'tab'; b.dataset.k = k; b.title = SC[k].tab;
+  b.innerHTML = `<b>${k.slice(1)}</b>${SHORT[k]}`; b.onclick = () => load(k);
+  $(+k.slice(1) <= 5 ? '#tabsA' : '#tabsB').appendChild(b);
 });
+new ResizeObserver(() => document.documentElement.style.setProperty('--tb-h', $('#toolbar').offsetHeight + 'px')).observe($('#toolbar'));
 $('#btnPlay').onclick = () => { if (playing) { playing = false; render(); } else play(); };
 $('#btnNext').onclick = () => { playing = false; next(); };
 $('#btnReset').onclick = reset;
-$('#speed').onchange = e => { speed = +e.target.value; };
+$('#speed').onclick = e => { const b = e.target.closest('button'); if (!b) return; speed = +b.dataset.v; document.querySelectorAll('#speed button').forEach(x => x.classList.toggle('on', x === b)); };
+function openInfo(id) {
+  document.querySelectorAll('.it-tabs [role=tab]').forEach(t => t.setAttribute('aria-selected', t.dataset.p === id));
+  document.querySelectorAll('.it-panel').forEach(p => p.hidden = p.id !== 'ipanel-' + id);
+}
+$('.it-tabs').onclick = e => { const t = e.target.closest('[role=tab]'); if (t) openInfo(t.dataset.p); };
+$('.it-tabs').onkeydown = e => {
+  const tabs = [...document.querySelectorAll('.it-tabs [role=tab]')], i = tabs.findIndex(t => t.getAttribute('aria-selected') === 'true');
+  const n = e.key === 'ArrowRight' ? (i + 1) % tabs.length : e.key === 'ArrowLeft' ? (i + tabs.length - 1) % tabs.length : -1;
+  if (n >= 0) { e.preventDefault(); openInfo(tabs[n].dataset.p); tabs[n].focus(); }
+};
+function toggleInfo(on) {
+  const card = $('#stdef'), modal = matchMedia('(min-width:1101px) and (min-height:640px)').matches;
+  if (!modal) { card.scrollIntoView({ behavior:'smooth' }); return; }
+  card.classList.toggle('open', on); $('#itBackdrop').hidden = !on;
+  if (on) document.querySelector('.it-tabs [aria-selected=true]').focus();
+}
+$('#lnkDefs').onclick = e => { e.preventDefault(); openInfo('structure'); toggleInfo(true); };
+$('#btnInfo').onclick = () => toggleInfo(!$('#stdef').classList.contains('open'));
+$('#itClose').onclick = $('#itBackdrop').onclick = () => toggleInfo(false);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#stdef').classList.contains('open')) toggleInfo(false); });
+/* bin tooltip: hit-tested on geometry so badges, routes and overlays never block it */
+const tipEl = document.body.appendChild(Object.assign(document.createElement('div'), { className:'map-tip', hidden:true }));
+const BIN_BOXES = Object.keys(binEls).map(id => ({ id, ...binRect(id) }));
+let hovBin = null;
+function binInfo(id) {
+  const a = parseBin(id).aisle, st = stypeOf(id), S = STYPE[st], sec = sectOf(id);
+  let html = `<div class="th"><i style="background:var(${S.c})"></i>Bin ${id}</div>
+    <div><span class="tk">Storage type</span> ${st} · ${S.name}</div>
+    <div><span class="tk">Section</span> ${sec} · ${SECT[sec]}</div>
+    <div><span class="tk">Bin type</span> ${S.bt}</div>
+    <div><span class="tk">Activity area</span> PCK-${a <= 3 ? 'P' : 'R'}</div>`;
+  const stock = [];
+  if (sc.stock) Object.keys(sc.stock).forEach(k => sc.stock[k].c.filter(c => c.bin === id).forEach(c => stock.push(`SKU ${k} · batch ${c.batch} · ${c.qty} · ${c.d}`)));
+  else Object.keys(LSTOCK).forEach(k => LSTOCK[k].filter(q => q.bin === id).forEach(q =>
+    stock.push(`SKU ${k} · ${q.qty} ${q.uom}${q.hu ? ' · HU ' + q.hu : ''} · exp ${fmtD(q.exp)} · GR ${fmtD(q.gr)}`)));
+  if (stock.length) html += `<div class="ts"><span class="tk">Stock</span><br>${stock.join('<br>')}</div>`;
+  const wts = sc.wts.filter(w => w.bin === id);
+  if (wts.length) html += `<div class="ts">${wts.map(w => `<span class="tw">WT${w.id}</span> ${w.qty} of SKU ${w.sku} (${w.batch})`).join('<br>')}</div>`;
+  return html;
+}
+map.addEventListener('mousemove', e => {
+  const m = map.getScreenCTM(); if (!m) return;
+  const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse());
+  const hit = BIN_BOXES.find(b => p.x >= b.x && p.x < b.x + b.w && p.y >= b.y && p.y < b.y + b.h);
+  const id = hit ? hit.id : null;
+  if (id !== hovBin) {
+    if (hovBin) binEls[hovBin].classList.remove('hov');
+    hovBin = id; map.classList.toggle('onbin', !!id);
+    if (id) { binEls[id].classList.add('hov'); tipEl.innerHTML = binInfo(id); }
+  }
+  tipEl.hidden = !id;
+  if (id) {
+    const w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+    tipEl.style.left = Math.min(e.clientX + 16, innerWidth - w - 8) + 'px';
+    tipEl.style.top = Math.min(e.clientY + 16, innerHeight - h - 8) + 'px';
+  }
+});
+map.addEventListener('mouseleave', () => { if (hovBin) binEls[hovBin].classList.remove('hov'); hovBin = null; tipEl.hidden = true; map.classList.remove('onbin'); });
 $('#btnStruct').onclick = e => { const on = e.target.getAttribute('aria-pressed') !== 'true'; e.target.setAttribute('aria-pressed', on); gStruct.classList.toggle('off', !on); };
 function setS6(q) {
   q = Math.max(1, Math.min(1499, Math.round(+q) || 620));
